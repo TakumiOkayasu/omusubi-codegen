@@ -209,6 +209,32 @@ make build
 chmod +x omusubi-codegen
 ```
 
+### エラー: macOSでダウンロードしたバイナリが実行できない
+
+```bash
+./omusubi-codegen --help
+# "omusubi-codegen" は、開発元を確認できないため開けません。
+```
+
+**原因**: macOSのGatekeeper機能が未署名のバイナリをブロックしています
+
+**解決策1（推奨）**: 検疫属性を削除
+```bash
+xattr -d com.apple.quarantine ./omusubi-codegen
+./omusubi-codegen --help  # ✅ 実行可能
+```
+
+**解決策2**: システム設定から許可
+1. バイナリを実行しようとする（エラーが出る）
+2. 「システム設定」→「プライバシーとセキュリティ」を開く
+3. 「このまま許可」ボタンをクリック
+4. 再度実行
+
+**解決策3**: spctlコマンドで許可
+```bash
+spctl --add ./omusubi-codegen
+```
+
 ## まとめ
 
 | 実行環境 | ビルド方法 | 実行可否 |
