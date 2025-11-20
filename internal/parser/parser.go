@@ -19,7 +19,11 @@ type Parser struct {
 // New creates a new C++ parser
 func New() *Parser {
 	parser := sitter.NewParser()
-	parser.SetLanguage(cpp.GetLanguage())
+	lang := cpp.GetLanguage()
+	if lang == nil {
+		panic("failed to get C++ language from tree-sitter")
+	}
+	parser.SetLanguage(lang)
 	return &Parser{
 		parser: parser,
 	}
@@ -42,9 +46,9 @@ func (p *Parser) ParseFile(filePath string) (*model.FileInfo, error) {
 
 // ParseSource parses C++ source code and extracts class information
 func (p *Parser) ParseSource(source []byte) (*model.FileInfo, error) {
-	tree, err := p.parser.ParseCtx(nil, nil, source)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse source: %w", err)
+	tree := p.parser.Parse(nil, source)
+	if tree == nil {
+		return nil, fmt.Errorf("failed to parse source: tree is nil")
 	}
 	defer tree.Close()
 
