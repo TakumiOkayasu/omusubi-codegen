@@ -4,6 +4,9 @@
 *.dll
 *.so
 *.dylib
+/omusubi-codegen
+omusubi-codegen-*
+# Legacy binary name
 /codegen
 codegen-*
 

@@ -26,7 +26,7 @@ make build
 ### 4. リポジトリ内の抽象クラスを確認
 
 ```bash
-./codegen parse --repo ~/projects/pre-omusubi
+./omusubi-codegen parse --repo ~/projects/pre-omusubi
 ```
 
 出力例:
@@ -51,7 +51,7 @@ Namespace: omusubi::hal
 
 詳細表示:
 ```bash
-./codegen parse --repo ~/projects/pre-omusubi --verbose
+./omusubi-codegen parse --repo ~/projects/pre-omusubi --verbose
 ```
 
 出力例(詳細):
@@ -71,7 +71,7 @@ Namespace: omusubi
 ### 5. 対話式で実装コードを生成
 
 ```bash
-./codegen generate --repo ~/projects/pre-omusubi
+./omusubi-codegen generate --repo ~/projects/pre-omusubi
 ```
 
 実行例:
@@ -102,7 +102,7 @@ Generated files in: .
 ### 6. コマンドライン引数で直接指定
 
 ```bash
-./codegen generate \
+./omusubi-codegen generate \
   --repo ~/projects/pre-omusubi \
   --base IDevice \
   --class MyDevice \
@@ -134,7 +134,7 @@ cp -r internal/template/templates my_templates
 # my_templates/*.tmpl を編集
 
 # カスタムテンプレートで生成
-./codegen generate \
+./omusubi-codegen generate \
   --repo ~/projects/pre-omusubi \
   --base IDevice \
   --class MyDevice \
@@ -158,7 +158,7 @@ for entry in "${CLASSES[@]}"; do
   IFS=':' read -r base derived <<< "$entry"
   echo "Generating $derived from $base..."
 
-  ./codegen generate \
+  ./omusubi-codegen generate \
     --repo "$REPO_PATH" \
     --base "$base" \
     --class "$derived" \
@@ -174,7 +174,7 @@ echo "All classes generated in $OUTPUT_DIR"
 
 ```bash
 # 正確なクラス名を確認
-./codegen parse --repo ~/projects/pre-omusubi --verbose
+./omusubi-codegen parse --repo ~/projects/pre-omusubi --verbose
 ```
 
 クラス名は大文字小文字を区別します。また、名前空間は含めません。
@@ -198,14 +198,14 @@ file internal/template/templates/*.tmpl
 
 ```bash
 # 全般的なヘルプ
-./codegen --help
+./omusubi-codegen --help
 
 # generateコマンドのヘルプ
-./codegen generate --help
+./omusubi-codegen generate --help
 
 # parseコマンドのヘルプ
-./codegen parse --help
+./omusubi-codegen parse --help
 
 # バージョン情報
-./codegen --version
+./omusubi-codegen --version
 ```

@@ -32,7 +32,7 @@ ARG DATE=unknown
 RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     go build \
     -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
-    -o /codegen \
+    -o /omusubi-codegen \
     ./cmd/codegen
 
 # Runtime stage
@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /codegen /usr/local/bin/codegen
+COPY --from=builder /omusubi-codegen /usr/local/bin/omusubi-codegen
 
-ENTRYPOINT ["codegen"]
+ENTRYPOINT ["omusubi-codegen"]
 CMD ["--help"]

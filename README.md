@@ -27,6 +27,9 @@ C++インターフェース定義から実装スケルトン、テストコー�
 
 ```bash
 go install github.com/TakumiOkayasu/omusubi-platform-codegen/cmd/codegen@latest
+# バイナリは $GOPATH/bin/codegen としてインストールされます
+# シンボリックリンクを作成する場合:
+# ln -s $GOPATH/bin/codegen $GOPATH/bin/omusubi-codegen
 ```
 
 ### ソースからビルド
@@ -35,6 +38,7 @@ go install github.com/TakumiOkayasu/omusubi-platform-codegen/cmd/codegen@latest
 git clone https://github.com/TakumiOkayasu/omusubi-platform-codegen
 cd omusubi-platform-codegen
 make build
+# バイナリは ./omusubi-codegen として生成されます
 ```
 
 詳細は[DISTRIBUTION.md](DISTRIBUTION.md)を参照してください。
@@ -53,19 +57,19 @@ make build
 ### 1. リポジトリ内の抽象クラスを一覧表示
 
 ```bash
-./codegen parse --repo /path/to/pre-omusubi
+./omusubi-codegen parse --repo /path/to/pre-omusubi
 ```
 
 詳細表示:
 ```bash
-./codegen parse --repo /path/to/pre-omusubi --verbose
+./omusubi-codegen parse --repo /path/to/pre-omusubi --verbose
 ```
 
 ### 2. 実装コードを生成
 
 基本的な使い方(対話式):
 ```bash
-./codegen generate --repo /path/to/pre-omusubi
+./omusubi-codegen generate --repo /path/to/pre-omusubi
 ```
 
 このコマンドを実行すると:
@@ -77,7 +81,7 @@ make build
 ### 3. コマンドライン引数で指定
 
 ```bash
-./codegen generate \
+./omusubi-codegen generate \
   --repo /path/to/pre-omusubi \
   --base AbstractClassName \
   --class MyImplementation \

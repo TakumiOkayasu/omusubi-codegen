@@ -55,32 +55,32 @@ jobs:
 
           go build \
             -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
-            -o codegen \
+            -o omusubi-codegen \
             ./cmd/codegen
 
       - name: Create archive
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          ARCHIVE_NAME=codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
+          ARCHIVE_NAME=omusubi-codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
 
           # Clean up if exists
           rm -rf ${ARCHIVE_NAME} ${ARCHIVE_NAME}.tar.gz
 
           mkdir -p ${ARCHIVE_NAME}
-          cp codegen ${ARCHIVE_NAME}/codegen
-          chmod +x ${ARCHIVE_NAME}/codegen
+          cp omusubi-codegen ${ARCHIVE_NAME}/omusubi-codegen
+          chmod +x ${ARCHIVE_NAME}/omusubi-codegen
           cp README.md ${ARCHIVE_NAME}/
           cp USAGE_EXAMPLES.md ${ARCHIVE_NAME}/ || true
 
           tar -czf ${ARCHIVE_NAME}.tar.gz ${ARCHIVE_NAME}
           rm -rf ${ARCHIVE_NAME}
-          rm -f codegen
+          rm -f omusubi-codegen
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binary-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: codegen-*.tar.gz
+          name: omusubi-codegen-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: omusubi-codegen-*.tar.gz
 
   release:
     name: Create GitHub Release
@@ -119,17 +119,17 @@ jobs:
 
             お使いのOSに合わせて以下からダウンロードしてください:
 
-            - **Linux (x86_64)**: `codegen-*-linux-amd64.tar.gz`
-            - **macOS (Intel)**: `codegen-*-darwin-amd64.tar.gz`
-            - **macOS (Apple Silicon)**: `codegen-*-darwin-arm64.tar.gz`
+            - **Linux (x86_64)**: `omusubi-codegen-*-linux-amd64.tar.gz`
+            - **macOS (Intel)**: `omusubi-codegen-*-darwin-amd64.tar.gz`
+            - **macOS (Apple Silicon)**: `omusubi-codegen-*-darwin-arm64.tar.gz`
 
             > **Note**: Linux ARM64版が必要な場合は、ARM64環境で`go build ./cmd/codegen`を実行してください。
 
             ダウンロード後:
             ```bash
-            tar -xzf codegen-*.tar.gz
-            cd codegen-*
-            ./codegen --help
+            tar -xzf omusubi-codegen-*.tar.gz
+            cd omusubi-codegen-*
+            ./omusubi-codegen --help
             ```
 
             詳細は [README.md](https://github.com/${{ github.repository }}) を参照してください。

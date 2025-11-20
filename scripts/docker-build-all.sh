@@ -8,9 +8,9 @@ VERSION=${VERSION:-$(git describe --tags --always --dirty 2>/dev/null || echo "d
 COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-BINARY_NAME="codegen"
+BINARY_NAME="omusubi-codegen"
 DIST_DIR="dist"
-IMAGE_NAME="codegen-builder"
+IMAGE_NAME="omusubi-codegen-builder"
 
 echo "Building version: ${VERSION}"
 echo "Commit: ${COMMIT}"
@@ -69,7 +69,7 @@ for PLATFORM in "${PLATFORMS[@]}"; do
     fi
 
     # Extract binary
-    BINARY_PATH="${DIST_DIR}/tmp-${OS}-${ARCH}/usr/local/bin/codegen"
+    BINARY_PATH="${DIST_DIR}/tmp-${OS}-${ARCH}/usr/local/bin/omusubi-codegen"
     OUTPUT_NAME="${BINARY_NAME}-${VERSION}-${OS}-${ARCH}"
 
     if [ -f "${BINARY_PATH}" ]; then
