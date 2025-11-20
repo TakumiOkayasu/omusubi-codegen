@@ -41,6 +41,21 @@ func (p *Parser) ParseFile(filePath string) (*model.FileInfo, error) {
 		return nil, err
 	}
 	fileInfo.Path = filePath
+
+	// Determine file extension
+	ext := strings.ToLower(filepath.Ext(filePath))
+	if ext == ".h" {
+		// Set extension for all classes in this file
+		for i := range fileInfo.Classes {
+			fileInfo.Classes[i].SourceFileExt = "h"
+		}
+	} else {
+		// Default to hpp
+		for i := range fileInfo.Classes {
+			fileInfo.Classes[i].SourceFileExt = "hpp"
+		}
+	}
+
 	return fileInfo, nil
 }
 
@@ -77,6 +92,7 @@ func (p *Parser) traverseNode(node *sitter.Node, source []byte, fileInfo *model.
 				p.traverseNode(bodyNode, source, fileInfo, namespace)
 			}
 		}
+		return // Don't traverse children, we already handled the body
 
 	case "class_specifier":
 		classInfo := p.extractClassInfo(node, source, currentNamespace)
@@ -86,6 +102,7 @@ func (p *Parser) traverseNode(node *sitter.Node, source []byte, fileInfo *model.
 				fileInfo.Namespace = currentNamespace
 			}
 		}
+		return // Don't traverse children, we already handled the class
 	}
 
 	// Traverse children

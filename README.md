@@ -67,16 +67,45 @@ make build
 
 ### 2. 実装コードを生成
 
-基本的な使い方(対話式):
+基本的な使い方(対話式・複数選択):
 ```bash
 ./omusubi-codegen generate --repo /path/to/pre-omusubi
 ```
 
 このコマンドを実行すると:
-1. リポジトリ内の抽象クラス一覧が表示されます
-2. 基底クラス名の入力を求められます
-3. 派生クラス名の入力を求められます
-4. カレントディレクトリに.hppと.cppが生成されます
+1. リポジトリ内の抽象クラスが検索されます
+2. **「全て選択しますか？」の選択肢が表示されます**
+   - `Yes - Select all classes`: 全てのクラスを選択
+   - `No - Choose individually`: 個別選択モードへ
+3. 個別選択モードでは**矢印キーとスペースで実装したいクラスを複数選択できます**
+   - `↑`/`↓`: カーソル移動
+   - `Space`: 選択/解除（選択したものに`[x]`マークが表示されます）
+   - `Enter`: 確定
+4. 派生クラス名のプレフィックスの入力を求められます（デフォルト: "My"）
+5. 選択した各クラスに対して、`<プレフィックス><BaseClassName>`の形式で.hppと.cppが生成されます
+
+#### 表示例
+```
+? Found 3 abstract classes. Select all?
+> No - Choose individually
+  Yes - Select all classes
+```
+個別選択を選んだ場合:
+```
+? Select abstract classes to implement:
+  [x] omusubi::IDevice (from testdata/sample/idevice.hpp)
+  [x] omusubi::ISensor (from testdata/sample/isensor.hpp)
+> [ ] omusubi::IActuator (from testdata/sample/iactuator.hpp)
+```
+- `[x]`: 選択済み（緑色で表示）
+- `[ ]`: 未選択
+- `>`: 現在のカーソル位置
+
+例: プレフィックスに "Custom" を指定し、IDevice と ISensor を選択した場合
+- `custom_idevice.hpp` / `custom_idevice.cpp`
+- `custom_isensor.hpp` / `custom_isensor.cpp`
+
+**注意**: ファイル名は自動的にスネークケース (`snake_case`) に変換されます。
 
 ### 3. コマンドライン引数で指定
 
@@ -160,17 +189,22 @@ omusubi-platform-codegen/
 入力: pre-omusubi内の抽象クラス (例: `IDevice`)
 
 生成されるファイル:
-- `mydevice.hpp` - 派生クラスのヘッダーファイル
-- `mydevice.cpp` - 実装スケルトン (関数本体は空、TODOコメント付き)
+- `my_device.hpp` - 派生クラスのヘッダーファイル
+- `my_device.cpp` - 実装スケルトン (関数本体は空、TODOコメント付き)
+
+**注意**:
+- ファイル名は自動的にスネークケース (`snake_case`) に変換されます
+- インクルードガードは `#pragma once` を使用します（モダンC++標準）
+- 元のヘッダーファイルが `.h` の場合、生成されるファイルも `.h` と `.c` になります
+- 元のヘッダーファイルが `.hpp` の場合、生成されるファイルは `.hpp` と `.cpp` になります
 
 ### 生成例
 
-#### mydevice.hpp
+#### my_device.hpp
 ```cpp
-#ifndef MYDEVICE_HPP_
-#define MYDEVICE_HPP_
+#pragma once
 
-#include "idevice.hpp"
+#include "i_device.hpp"
 
 class MyDevice : public IDevice {
 public:
@@ -184,13 +218,11 @@ public:
     void initialize() override;
     int read(uint8_t* buffer, size_t size) override;
 };
-
-#endif // MYDEVICE_HPP_
 ```
 
-#### mydevice.cpp
+#### my_device.cpp
 ```cpp
-#include "mydevice.hpp"
+#include "my_device.hpp"
 
 void MyDevice::initialize() {
     // TODO: Implement initialize

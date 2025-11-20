@@ -9,6 +9,7 @@ type ClassInfo struct {
 	Methods       []MethodInfo
 	Fields        []FieldInfo
 	Documentation string
+	SourceFileExt string // "h" or "hpp"
 }
 
 // MethodInfo represents a C++ method

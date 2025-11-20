@@ -6,7 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/generator"
+	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/model"
 	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/parser"
 	"github.com/spf13/cobra"
 )
@@ -79,65 +81,98 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string) 
 	// Create parser
 	p := parser.New()
 
-	// If base class not provided, list available abstract classes
-	if baseClass == "" {
-		fmt.Println("Searching for abstract classes in repository...")
-		fileInfos, err := p.ParseDirectory(repoPath)
-		if err != nil {
-			return fmt.Errorf("failed to parse repository: %w", err)
-		}
+	fmt.Println("Searching for abstract classes in repository...")
+	fileInfos, err := p.ParseDirectory(repoPath)
+	if err != nil {
+		return fmt.Errorf("failed to parse repository: %w", err)
+	}
 
-		if len(fileInfos) == 0 {
-			return fmt.Errorf("no abstract classes found in %s", repoPath)
-		}
+	if len(fileInfos) == 0 {
+		return fmt.Errorf("no abstract classes found in %s", repoPath)
+	}
 
-		fmt.Println("\nAvailable abstract classes:")
-		for _, fileInfo := range fileInfos {
-			for _, classInfo := range fileInfo.Classes {
-				if classInfo.IsAbstract {
-					fullName := classInfo.Name
-					if classInfo.Namespace != "" {
-						fullName = classInfo.Namespace + "::" + classInfo.Name
-					}
-					fmt.Printf("  - %s (from %s)\n", fullName, fileInfo.Path)
+	// Collect all abstract classes
+	type ClassOption struct {
+		Name      string
+		FullName  string
+		FilePath  string
+		ClassInfo *model.ClassInfo
+	}
+
+	var classOptions []ClassOption
+	for _, fileInfo := range fileInfos {
+		for _, classInfo := range fileInfo.Classes {
+			if classInfo.IsAbstract {
+				fullName := classInfo.Name
+				if classInfo.Namespace != "" {
+					fullName = classInfo.Namespace + "::" + classInfo.Name
 				}
+
+				classOptions = append(classOptions, ClassOption{
+					Name:      classInfo.Name,
+					FullName:  fullName,
+					FilePath:  fileInfo.Path,
+					ClassInfo: &classInfo,
+				})
 			}
 		}
+	}
 
-		fmt.Print("\nEnter base class name: ")
-		baseClass = readLine()
-		if baseClass == "" {
-			return fmt.Errorf("base class name is required")
+	if len(classOptions) == 0 {
+		return fmt.Errorf("no abstract classes found in %s", repoPath)
+	}
+
+	// Ask if user wants to select all
+	var selectAllResponse string
+	selectAllPrompt := &survey.Select{
+		Message: fmt.Sprintf("Found %d abstract classes. Select all?", len(classOptions)),
+		Options: []string{"Yes - Select all classes", "No - Choose individually"},
+		Default: "No - Choose individually",
+	}
+	if err := survey.AskOne(selectAllPrompt, &selectAllResponse); err != nil {
+		return fmt.Errorf("failed to get user input: %w", err)
+	}
+
+	selectAllClasses := strings.HasPrefix(selectAllResponse, "Yes")
+
+	var selectedIndices []int
+
+	if selectAllClasses {
+		// Select all classes
+		for i := range classOptions {
+			selectedIndices = append(selectedIndices, i)
+		}
+		fmt.Printf("\n✓ All %d classes selected\n", len(selectedIndices))
+	} else {
+		// Create options for survey
+		var options []string
+		for _, opt := range classOptions {
+			options = append(options, fmt.Sprintf("%s (from %s)", opt.FullName, opt.FilePath))
+		}
+
+		// Multi-select prompt
+		prompt := &survey.MultiSelect{
+			Message: "Select abstract classes to implement:",
+			Options: options,
+			Help:    "Use arrow keys to move, space to select/deselect, enter to confirm",
+		}
+
+		if err := survey.AskOne(prompt, &selectedIndices); err != nil {
+			return fmt.Errorf("failed to get user selection: %w", err)
+		}
+
+		if len(selectedIndices) == 0 {
+			return fmt.Errorf("no classes selected")
 		}
 	}
 
-	// Find the abstract class
-	fmt.Printf("Searching for abstract class '%s'...\n", baseClass)
-	classInfo, err := p.FindAbstractClass(repoPath, baseClass)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Found abstract class: %s\n", classInfo.Name)
-	if classInfo.Namespace != "" {
-		fmt.Printf("Namespace: %s\n", classInfo.Namespace)
-	}
-
-	// Count pure virtual methods
-	pureVirtualCount := 0
-	for _, method := range classInfo.Methods {
-		if method.IsPureVirtual {
-			pureVirtualCount++
-		}
-	}
-	fmt.Printf("Pure virtual methods: %d\n", pureVirtualCount)
-
-	// Get derived class name
-	if className == "" {
-		fmt.Print("\nEnter derived class name: ")
-		className = readLine()
-		if className == "" {
-			return fmt.Errorf("derived class name is required")
+	// Get derived class name prefix(DeviceName) if not provided
+	classPrefix := className
+	if classPrefix == "" {
+		fmt.Print("\nEnter derived class name prefix (will be used as: <DeviceName><BaseClassName>): ")
+		classPrefix = readLine()
+		if classPrefix == "" {
+			classPrefix = "My"
 		}
 	}
 
@@ -147,14 +182,28 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string) 
 		OutputDir:   outputDir,
 	})
 
-	// Generate files
-	fmt.Printf("\nGenerating files for %s...\n", className)
-	if err := gen.GenerateImplementation(classInfo, className); err != nil {
-		return fmt.Errorf("failed to generate implementation: %w", err)
+	// Generate files for each selected class
+	fmt.Printf("\nGenerating files...\n")
+	successCount := 0
+	for _, idx := range selectedIndices {
+		selectedClass := classOptions[idx]
+		derivedName := classPrefix + selectedClass.Name
+
+		fmt.Printf("\n[%d/%d] Generating %s from %s...\n",
+			successCount+1, len(selectedIndices), derivedName, selectedClass.FullName)
+
+		if err := gen.GenerateImplementation(selectedClass.ClassInfo, derivedName); err != nil {
+			fmt.Fprintf(os.Stderr, "  ✗ Failed to generate %s: %v\n", derivedName, err)
+			continue
+		}
+
+		fmt.Printf("  ✓ Generated %s.hpp and %s.cpp\n", derivedName, derivedName)
+		successCount++
 	}
 
-	fmt.Printf("\n✓ Code generation completed successfully!\n")
-	fmt.Printf("Generated files in: %s\n", outputDir)
+	fmt.Printf("\n✓ Code generation completed!\n")
+	fmt.Printf("Successfully generated: %d/%d classes\n", successCount, len(selectedIndices))
+	fmt.Printf("Output directory: %s\n", outputDir)
 	return nil
 }
 

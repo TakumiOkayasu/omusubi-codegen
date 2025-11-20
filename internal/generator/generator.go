@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -39,21 +40,31 @@ func (g *Generator) GenerateImplementation(classInfo *model.ClassInfo, derivedCl
 		return err
 	}
 
+	// Determine file extension based on source file
+	headerExt := "hpp"
+	if classInfo.SourceFileExt == "h" {
+		headerExt = "h"
+	}
+
 	// Generate header file
-	if err := g.generateHeader(classInfo, derivedClassName); err != nil {
+	if err := g.generateHeader(classInfo, derivedClassName, headerExt); err != nil {
 		return fmt.Errorf("failed to generate header: %w", err)
 	}
 
 	// Generate source file
-	if err := g.generateSource(classInfo, derivedClassName); err != nil {
+	sourceExt := "cpp"
+	if classInfo.SourceFileExt == "h" {
+		sourceExt = "c"
+	}
+	if err := g.generateSource(classInfo, derivedClassName, headerExt, sourceExt); err != nil {
 		return fmt.Errorf("failed to generate source: %w", err)
 	}
 
 	return nil
 }
 
-// generateHeader generates the .hpp file
-func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName string) error {
+// generateHeader generates the header file (.hpp or .h)
+func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName string, headerExt string) error {
 	tmpl, err := g.loadTemplate("class_header.tmpl")
 	if err != nil {
 		return err
@@ -66,7 +77,7 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 		return fmt.Errorf("failed to execute template: %w", err)
 	}
 
-	filename := strings.ToLower(derivedClassName) + ".hpp"
+	filename := toSnakeCase(derivedClassName) + "." + headerExt
 	outputPath := g.getOutputPath(filename)
 
 	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
@@ -77,21 +88,22 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 	return nil
 }
 
-// generateSource generates the .cpp file
-func (g *Generator) generateSource(classInfo *model.ClassInfo, derivedClassName string) error {
+// generateSource generates the source file (.cpp or .c)
+func (g *Generator) generateSource(classInfo *model.ClassInfo, derivedClassName string, headerExt string, sourceExt string) error {
 	tmpl, err := g.loadTemplate("class_source.tmpl")
 	if err != nil {
 		return err
 	}
 
 	data := g.prepareTemplateData(classInfo, derivedClassName)
+	data["HeaderExt"] = headerExt
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return fmt.Errorf("failed to execute template: %w", err)
 	}
 
-	filename := strings.ToLower(derivedClassName) + ".cpp"
+	filename := toSnakeCase(derivedClassName) + "." + sourceExt
 	outputPath := g.getOutputPath(filename)
 
 	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
@@ -112,14 +124,18 @@ func (g *Generator) prepareTemplateData(classInfo *model.ClassInfo, derivedClass
 		}
 	}
 
-	guardName := strings.ToUpper(derivedClassName) + "_HPP_"
+	// Determine base class extension
+	baseClassExt := classInfo.SourceFileExt
+	if baseClassExt == "" {
+		baseClassExt = "hpp"
+	}
 
 	return map[string]interface{}{
 		"ClassName":          derivedClassName,
 		"BaseClass":          classInfo.Name,
+		"BaseClassExt":       baseClassExt,
 		"Namespace":          classInfo.Namespace,
 		"Methods":            pureVirtualMethods,
-		"GuardName":          guardName,
 		"HasNamespace":       classInfo.Namespace != "",
 		"FormatParameters":   formatParameters,
 		"FormatMethodSignature": formatMethodSignature,
@@ -135,6 +151,7 @@ func (g *Generator) loadTemplate(name string) (*template.Template, error) {
 		"formatMethodSignature": formatMethodSignature,
 		"toLower":              strings.ToLower,
 		"toUpper":              strings.ToUpper,
+		"toSnakeCase":          toSnakeCase,
 	}
 
 	tmpl, err := template.New(name).Funcs(funcMap).ParseFiles(tmplPath)
@@ -211,5 +228,15 @@ func (g *Generator) ensureOutputDir() error {
 // getOutputPath returns the full path for an output file
 func (g *Generator) getOutputPath(filename string) string {
 	return filepath.Join(g.outputDir, filename)
+}
+
+// toSnakeCase converts CamelCase or PascalCase to snake_case
+func toSnakeCase(s string) string {
+	// Insert underscore before uppercase letters (except at the start)
+	re := regexp.MustCompile("([a-z0-9])([A-Z])")
+	snake := re.ReplaceAllString(s, "${1}_${2}")
+
+	// Convert to lowercase
+	return strings.ToLower(snake)
 }
 
