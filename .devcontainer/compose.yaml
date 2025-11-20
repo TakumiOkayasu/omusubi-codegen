@@ -1,0 +1,69 @@
+services:
+  devcontainer:
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+        USERNAME: ${USER}
+        USER_UID: ${UID:-1000}
+        USER_GID: ${GID:-1000}
+    container_name: ${PROJECT_NAME:-platform-builder}-devcontainer
+    hostname: ${PROJECT_NAME:-platform-builder}-dev
+    volumes:
+      # Workspace mount
+      - type: bind
+        source: ..
+        target: /workspace
+      # Named volumes for caching
+      - type: volume
+        source: go-modules
+        target: /go/pkg/mod
+      - type: volume
+        source: vscode-extensions
+        target: /home/${USER}/.vscode-server/extensions
+      # Optional: mount .gitconfig and .ssh for git operations
+      # - type: bind
+      #   source: ~/.gitconfig
+      #   target: /home/${USER}/.gitconfig
+      #   read_only: true
+      # - type: bind
+      #   source: ~/.ssh
+      #   target: /home/${USER}/.ssh
+      #   read_only: true
+    # Uncomment to expose ports (adjust as needed to avoid conflicts)
+    # ports:
+    #   - target: 8080
+    #     published: ${HOST_PORT_8080:-8080}
+    #     protocol: tcp
+    #   - target: 3000
+    #     published: ${HOST_PORT_3000:-3000}
+    #     protocol: tcp
+    # Use host network mode if needed (Linux only)
+    # network_mode: host
+    networks:
+      - devnetwork
+    working_dir: /workspace
+    user: ${USER}
+    command: sleep infinity
+    environment:
+      USER: ${USER}
+      PROJECT_NAME: ${PROJECT_NAME:-platform-builder}
+    security_opt:
+      - seccomp:unconfined
+    # Capabilities (add if needed)
+    # cap_add:
+    #   - SYS_PTRACE
+
+volumes:
+  # Project-specific volumes (compose project name will be prefixed automatically)
+  go-modules:
+    name: ${PROJECT_NAME:-platform-builder}-go-modules
+  vscode-extensions:
+    name: ${PROJECT_NAME:-platform-builder}-vscode-extensions
+
+networks:
+  devnetwork:
+    name: ${PROJECT_NAME:-platform-builder}-network
+    driver: bridge

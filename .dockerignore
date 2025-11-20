@@ -1,0 +1,64 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# CI/CD
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+bin/
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+codegen
+
+# Go
+vendor/
+go.work
+go.work.sum
+
+# Test artifacts
+coverage.out
+coverage.html
+*.test
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (if any)
+node_modules/
+
+# Test data output
+testdata/output/
+
+# Environment
+.env
+.env.local
+
+# Docker
+.devcontainer/
+Dockerfile*
+compose.yaml
+docker-compose*.yml

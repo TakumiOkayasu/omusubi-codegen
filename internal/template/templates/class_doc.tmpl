@@ -1,0 +1,48 @@
+/**
+ * @file {{.Name}}.hpp
+ * @brief {{.Documentation}}
+ * @details Auto-generated documentation for {{.Name}} class
+ */
+
+{{if .Namespace}}
+namespace {{.Namespace}} {
+{{end}}
+
+/**
+ * @class {{.Name}}
+ * @brief {{.Documentation}}
+ */
+class {{.Name}}{{if .BaseClasses}} : {{range $i, $base := .BaseClasses}}{{if $i}}, {{end}}public {{$base}}{{end}}{{end}} {
+public:
+{{range .Methods}}
+{{if eq .AccessLevel.String "public"}}
+    /**
+     * @brief {{.Documentation}}
+     {{range .Parameters}}* @param {{.Name}} {{.Type}}
+     {{end}}{{if ne .ReturnType "void"}}* @return {{.ReturnType}}
+     {{end}}*/
+    {{if .IsVirtual}}virtual {{end}}{{.ReturnType}} {{.Name}}({{range $i, $p := .Parameters}}{{if $i}}, {{end}}{{$p.Type}} {{$p.Name}}{{end}}){{if .IsConst}} const{{end}}{{if .IsPureVirtual}} = 0{{end}};
+{{end}}
+{{end}}
+
+protected:
+{{range .Methods}}
+{{if eq .AccessLevel.String "protected"}}
+    /**
+     * @brief {{.Documentation}}
+     */
+    {{if .IsVirtual}}virtual {{end}}{{.ReturnType}} {{.Name}}({{range $i, $p := .Parameters}}{{if $i}}, {{end}}{{$p.Type}} {{$p.Name}}{{end}}){{if .IsConst}} const{{end}}{{if .IsPureVirtual}} = 0{{end}};
+{{end}}
+{{end}}
+
+private:
+{{range .Methods}}
+{{if eq .AccessLevel.String "private"}}
+    {{if .IsVirtual}}virtual {{end}}{{.ReturnType}} {{.Name}}({{range $i, $p := .Parameters}}{{if $i}}, {{end}}{{$p.Type}} {{$p.Name}}{{end}}){{if .IsConst}} const{{end}}{{if .IsPureVirtual}} = 0{{end}};
+{{end}}
+{{end}}
+};
+
+{{if .Namespace}}
+} // namespace {{.Namespace}}
+{{end}}

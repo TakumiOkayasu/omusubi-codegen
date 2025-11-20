@@ -1,0 +1,105 @@
+# GoReleaser configuration
+# See: https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: codegen
+    binary: codegen
+    main: ./cmd/codegen
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Windows用の拡張子
+    hooks:
+      post:
+        - cmd: upx "{{ .Path }}"
+          env:
+            - UPX_FLAGS=--best --lzma
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - USAGE_EXAMPLES.md
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+release:
+  github:
+    owner: TakumiOkayasu
+    name: omusubi-platform-codegen
+  draft: false
+  prerelease: auto
+  mode: append
+  header: |
+    ## Omusubi Platform Code Generator {{ .Tag }}
+
+    Pre-omusubiフレームワークの抽象クラスから実装コードを自動生成するツールです。
+
+    ### インストール方法
+
+    #### Homebrewの場合 (macOS/Linux)
+    ```bash
+    brew install TakumiOkayasu/tap/codegen
+    ```
+
+    #### バイナリを直接ダウンロード
+    お使いのOSに合わせて以下からダウンロードしてください:
+
+  footer: |
+    ---
+    **Full Changelog**: https://github.com/TakumiOkayasu/omusubi-platform-codegen/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+# Homebrewタップ用の設定
+brews:
+  - repository:
+      owner: TakumiOkayasu
+      name: homebrew-tap
+    directory: Formula
+    homepage: https://github.com/TakumiOkayasu/omusubi-platform-codegen
+    description: "Code generator for Omusubi embedded framework"
+    license: "MIT"
+    test: |
+      system "#{bin}/codegen --version"
+    install: |
+      bin.install "codegen"

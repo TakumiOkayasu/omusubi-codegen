@@ -1,0 +1,42 @@
+{
+  "name": "Omusubi Platform Codegen",
+  "dockerComposeFile": "compose.yaml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-vscode.cpptools",
+        "twxs.cmake",
+        "formulahendry.code-runner"
+      ],
+      "settings": {
+        "go.toolsManagement.checkForUpdates": "local",
+        "go.useLanguageServer": true,
+        "go.gopath": "/go",
+        "go.goroot": "/usr/local/go",
+        "[go]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        "C_Cpp.default.cppStandard": "c++14",
+        "C_Cpp.default.intelliSenseMode": "linux-clang-x64",
+        "C_Cpp.default.compilerPath": "/usr/bin/clang++",
+        "C_Cpp.clang_format_path": "/usr/bin/clang-format"
+      }
+    }
+  },
+  "forwardPorts": [],
+  "initializeCommand": "test -f ${localWorkspaceFolder}/.env || cp ${localWorkspaceFolder}/.env.example ${localWorkspaceFolder}/.env",
+  "onCreateCommand": {
+    "fix-go-permissions": "sudo mkdir -p /go/pkg/mod/cache && sudo chmod -R 777 /go",
+    "go-deps": "go mod download || true",
+    "go-verify": "go mod verify || true"
+  },
+  "updateContentCommand": "go mod download || true",
+  "postStartCommand": "sudo chmod -R 777 /go 2>/dev/null || true",
+  "remoteUser": "${localEnv:USER}"
+}

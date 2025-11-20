@@ -1,0 +1,63 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+codegen
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# Environment variables
+.env
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Generated files
+*.gen.cpp
+*.gen.hpp
+*_test.gen.cpp
+
+# Build directories
+build/
+dist/
+bin/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# C++ build artifacts
+*.o
+*.a
+*.out
+*.gch
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Test output
+testdata/output/

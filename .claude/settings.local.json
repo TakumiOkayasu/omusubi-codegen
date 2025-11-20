@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(chmod:*)",
+      "Bash(bash:*)",
+      "Bash(make devcontainer-clean:*)",
+      "Bash(./scripts/clean-devcontainer.sh:*)",
+      "Bash(go mod tidy:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
