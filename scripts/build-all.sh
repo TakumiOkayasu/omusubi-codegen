@@ -22,65 +22,60 @@ echo ""
 rm -rf ${DIST_DIR}
 mkdir -p ${DIST_DIR}
 
-# Platform configurations
-# Format: "OS/ARCH"
-PLATFORMS=(
-    "linux/amd64"
-    "linux/arm64"
-    "darwin/amd64"
-    "darwin/arm64"
-    "windows/amd64"
-    "windows/arm64"
-)
+# Detect host platform
+HOST_OS=$(go env GOOS)
+HOST_ARCH=$(go env GOARCH)
 
-for PLATFORM in "${PLATFORMS[@]}"; do
-    IFS='/' read -r GOOS GOARCH <<< "$PLATFORM"
+echo "Note: tree-sitter requires CGO, so cross-compilation is limited."
+echo "Building for host platform only: ${HOST_OS}/${HOST_ARCH}"
+echo "For multi-platform builds, use GoReleaser with Docker or GitHub Actions."
+echo ""
 
-    OUTPUT_NAME="${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}"
+# Build for host platform only
+OUTPUT_NAME="${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}"
 
-    if [ "$GOOS" = "windows" ]; then
-        OUTPUT_NAME="${OUTPUT_NAME}.exe"
-    fi
+if [ "$HOST_OS" = "windows" ]; then
+    OUTPUT_NAME="${OUTPUT_NAME}.exe"
+fi
 
-    OUTPUT_PATH="${DIST_DIR}/${OUTPUT_NAME}"
+OUTPUT_PATH="${DIST_DIR}/${OUTPUT_NAME}"
 
-    echo "Building for ${GOOS}/${GOARCH}..."
+echo "Building for ${HOST_OS}/${HOST_ARCH}..."
 
-    env GOOS=${GOOS} GOARCH=${GOARCH} go build \
-        -ldflags="${LDFLAGS}" \
-        -o "${OUTPUT_PATH}" \
-        ./cmd/codegen
+go build \
+    -ldflags="${LDFLAGS}" \
+    -o "${OUTPUT_PATH}" \
+    ./cmd/codegen
 
-    if [ $? -ne 0 ]; then
-        echo "Error building for ${GOOS}/${GOARCH}"
-        exit 1
-    fi
+if [ $? -ne 0 ]; then
+    echo "Error building for ${HOST_OS}/${HOST_ARCH}"
+    exit 1
+fi
 
-    echo "  ✓ Built: ${OUTPUT_PATH}"
+echo "  ✓ Built: ${OUTPUT_PATH}"
 
-    # Create archive
-    ARCHIVE_DIR="${DIST_DIR}/${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}"
-    mkdir -p "${ARCHIVE_DIR}"
+# Create archive
+ARCHIVE_DIR="${DIST_DIR}/${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}"
+mkdir -p "${ARCHIVE_DIR}"
 
-    cp "${OUTPUT_PATH}" "${ARCHIVE_DIR}/${BINARY_NAME}$([ "$GOOS" = "windows" ] && echo ".exe" || echo "")"
-    cp README.md "${ARCHIVE_DIR}/"
-    cp USAGE_EXAMPLES.md "${ARCHIVE_DIR}/" 2>/dev/null || true
+cp "${OUTPUT_PATH}" "${ARCHIVE_DIR}/${BINARY_NAME}$([ "$HOST_OS" = "windows" ] && echo ".exe" || echo "")"
+cp README.md "${ARCHIVE_DIR}/"
+cp USAGE_EXAMPLES.md "${ARCHIVE_DIR}/" 2>/dev/null || true
 
-    # Create tar.gz or zip
-    cd "${DIST_DIR}"
-    if [ "$GOOS" = "windows" ]; then
-        zip -q -r "${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}.zip" \
-            "${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}"
-        echo "  ✓ Created: ${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}.zip"
-    else
-        tar -czf "${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}.tar.gz" \
-            "${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}"
-        echo "  ✓ Created: ${BINARY_NAME}-${VERSION}-${GOOS}-${GOARCH}.tar.gz"
-    fi
-    cd ..
+# Create tar.gz or zip
+cd "${DIST_DIR}"
+if [ "$HOST_OS" = "windows" ]; then
+    zip -q -r "${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}.zip" \
+        "${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}"
+    echo "  ✓ Created: ${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}.zip"
+else
+    tar -czf "${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}.tar.gz" \
+        "${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}"
+    echo "  ✓ Created: ${BINARY_NAME}-${VERSION}-${HOST_OS}-${HOST_ARCH}.tar.gz"
+fi
+cd ..
 
-    rm -rf "${ARCHIVE_DIR}"
-done
+rm -rf "${ARCHIVE_DIR}"
 
 # Generate checksums
 echo ""

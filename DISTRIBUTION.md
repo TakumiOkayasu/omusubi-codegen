@@ -51,18 +51,42 @@ brew install TakumiOkayasu/tap/codegen
 # https://github.com/TakumiOkayasu/omusubi-platform-codegen/releases
 ```
 
-## 2. 手動クロスコンパイル
+## 2. ローカルビルド
 
-開発中やテスト配布に便利です。
+### 重要な注意点
 
-### ビルド
+**このプロジェクトはtree-sitterを使用しているため、CGOが必須です。**
+
+これにより:
+- 通常のGoクロスコンパイル(`GOOS=linux GOARCH=amd64 go build`)は動作しません
+- ホストプラットフォームのみビルド可能です
+- マルチプラットフォームビルドには、GitHub ActionsまたはDocker buildxが必要です
+
+### 現在のプラットフォーム向けビルド
 
 ```bash
-# すべてのプラットフォーム向けにビルド
+# 現在のOS/アーキテクチャ向けにビルド
 make release
 
 # または直接スクリプト実行
 ./scripts/build-all.sh
+```
+
+生成されるファイル例(macOS ARM64の場合):
+```
+dist/
+├── codegen-v1.0.0-darwin-arm64.tar.gz
+└── checksums.txt
+```
+
+### Docker buildxを使ったマルチプラットフォームビルド
+
+```bash
+# すべてのプラットフォーム向けにビルド
+make release-docker
+
+# または直接スクリプト実行
+./scripts/docker-build-all.sh
 ```
 
 生成されるファイル:
@@ -72,8 +96,6 @@ dist/
 ├── codegen-v1.0.0-linux-arm64.tar.gz
 ├── codegen-v1.0.0-darwin-amd64.tar.gz
 ├── codegen-v1.0.0-darwin-arm64.tar.gz
-├── codegen-v1.0.0-windows-amd64.zip
-├── codegen-v1.0.0-windows-arm64.zip
 └── checksums.txt
 ```
 

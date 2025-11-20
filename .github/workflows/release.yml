@@ -9,8 +9,28 @@ permissions:
   contents: write
 
 jobs:
-  goreleaser:
-    runs-on: ubuntu-latest
+  build:
+    name: Build binaries
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # Linux builds
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+
+          # macOS builds
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,11 +42,95 @@ jobs:
         with:
           go-version: '1.23'
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+      - name: Install dependencies (Linux)
+        if: matrix.goos == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Build binary
+        env:
+          CGO_ENABLED: 1
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          COMMIT=$(git rev-parse --short HEAD)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          go build \
+            -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
+            -o codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }} \
+            ./cmd/codegen
+
+      - name: Create archive
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          ARCHIVE_NAME=codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
+
+          mkdir -p ${ARCHIVE_NAME}
+          cp codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }} ${ARCHIVE_NAME}/codegen
+          chmod +x ${ARCHIVE_NAME}/codegen
+          cp README.md ${ARCHIVE_NAME}/
+          cp USAGE_EXAMPLES.md ${ARCHIVE_NAME}/ || true
+
+          tar -czf ${ARCHIVE_NAME}.tar.gz ${ARCHIVE_NAME}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
+          name: binary-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: codegen-*.tar.gz
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          find . -name "*.tar.gz" -exec mv {} . \;
+          sha256sum *.tar.gz > checksums.txt
+          cd ..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/checksums.txt
+          body: |
+            ## Omusubi Platform Code Generator ${{ github.ref_name }}
+
+            Pre-omusubiフレームワークの抽象クラスから実装コードを自動生成するツールです。
+
+            ### インストール方法
+
+            お使いのOSに合わせて以下からダウンロードしてください:
+
+            - **Linux (amd64)**: `codegen-*-linux-amd64.tar.gz`
+            - **Linux (arm64)**: `codegen-*-linux-arm64.tar.gz`
+            - **macOS (Intel)**: `codegen-*-darwin-amd64.tar.gz`
+            - **macOS (Apple Silicon)**: `codegen-*-darwin-arm64.tar.gz`
+
+            ダウンロード後:
+            ```bash
+            tar -xzf codegen-*.tar.gz
+            cd codegen-*
+            ./codegen --help
+            ```
+
+            詳細は [README.md](https://github.com/${{ github.repository }}) を参照してください。
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

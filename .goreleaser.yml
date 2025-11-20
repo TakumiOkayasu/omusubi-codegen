@@ -1,5 +1,9 @@
 # GoReleaser configuration
 # See: https://goreleaser.com
+#
+# NOTE: This project uses tree-sitter which requires CGO.
+# For cross-platform builds, use GitHub Actions with matrix builds
+# or the docker-build-all.sh script with Docker buildx.
 
 version: 2
 
@@ -12,20 +16,13 @@ builds:
     binary: codegen
     main: ./cmd/codegen
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
+    # Build only for the current platform
+    # GitHub Actions will build for each platform separately
     goos:
-      - linux
-      - darwin
-      - windows
+      - "{{ .Os }}"
     goarch:
-      - amd64
-      - arm64
-    # Windows用の拡張子
-    hooks:
-      post:
-        - cmd: upx "{{ .Path }}"
-          env:
-            - UPX_FLAGS=--best --lzma
+      - "{{ .Arch }}"
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
