@@ -55,7 +55,7 @@ jobs:
 
           go build \
             -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
-            -o codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }} \
+            -o codegen \
             ./cmd/codegen
 
       - name: Create archive
@@ -63,17 +63,18 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           ARCHIVE_NAME=codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
 
-          # Clean up if directory exists
+          # Clean up if exists
           rm -rf ${ARCHIVE_NAME} ${ARCHIVE_NAME}.tar.gz
 
           mkdir -p ${ARCHIVE_NAME}
-          cp codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }} ${ARCHIVE_NAME}/codegen
+          cp codegen ${ARCHIVE_NAME}/codegen
           chmod +x ${ARCHIVE_NAME}/codegen
           cp README.md ${ARCHIVE_NAME}/
           cp USAGE_EXAMPLES.md ${ARCHIVE_NAME}/ || true
 
           tar -czf ${ARCHIVE_NAME}.tar.gz ${ARCHIVE_NAME}
           rm -rf ${ARCHIVE_NAME}
+          rm -f codegen
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

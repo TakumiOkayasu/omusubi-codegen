@@ -9,7 +9,8 @@
       "Bash(make devcontainer-clean:*)",
       "Bash(./scripts/clean-devcontainer.sh:*)",
       "Bash(go mod tidy:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
