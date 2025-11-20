@@ -15,21 +15,18 @@ jobs:
     strategy:
       matrix:
         include:
-          # Linux builds
+          # Linux builds - native only (CGO limitation)
           - os: ubuntu-latest
             goos: linux
             goarch: amd64
-          - os: ubuntu-latest
-            goos: linux
-            goarch: arm64
 
-          # macOS builds
-          - os: macos-latest
-            goos: darwin
-            goarch: amd64
-          - os: macos-latest
+          # macOS builds - build both architectures on arm64 runner
+          - os: macos-14  # M1 runner
             goos: darwin
             goarch: arm64
+          - os: macos-13  # Intel runner
+            goos: darwin
+            goarch: amd64
 
     steps:
       - name: Checkout
@@ -51,8 +48,6 @@ jobs:
       - name: Build binary
         env:
           CGO_ENABLED: 1
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           COMMIT=$(git rev-parse --short HEAD)
@@ -119,10 +114,11 @@ jobs:
 
             お使いのOSに合わせて以下からダウンロードしてください:
 
-            - **Linux (amd64)**: `codegen-*-linux-amd64.tar.gz`
-            - **Linux (arm64)**: `codegen-*-linux-arm64.tar.gz`
+            - **Linux (x86_64)**: `codegen-*-linux-amd64.tar.gz`
             - **macOS (Intel)**: `codegen-*-darwin-amd64.tar.gz`
             - **macOS (Apple Silicon)**: `codegen-*-darwin-arm64.tar.gz`
+
+            > **Note**: Linux ARM64版が必要な場合は、ARM64環境で`go build ./cmd/codegen`を実行してください。
 
             ダウンロード後:
             ```bash

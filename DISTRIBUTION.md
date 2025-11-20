@@ -2,20 +2,19 @@
 
 ## 配布方法の比較
 
-| 方法 | 難易度 | 自動化 | おすすめ度 | 用途 |
-|------|--------|--------|-----------|------|
-| GoReleaser + GitHub Actions | 低 | ◎ | ★★★★★ | 本番リリース |
-| 手動クロスコンパイル | 低 | △ | ★★★☆☆ | テスト配布 |
-| go install | 最低 | - | ★★☆☆☆ | 開発者向け |
-| Docker | 中 | ◎ | ★★★★☆ | コンテナ環境 |
+| 方法 | 難易度 | 自動化 | おすすめ度 | 用途 | CGO対応 |
+|------|--------|--------|-----------|------|---------|
+| GitHub Actions (マトリックス) | 低 | ◎ | ★★★★★ | 本番リリース | ◎ |
+| Docker buildx | 中 | ◎ | ★★★★☆ | ローカルマルチビルド | ◎ |
+| ローカルビルド | 低 | △ | ★★★☆☆ | テスト配布 | ○ (現在のプラットフォームのみ) |
+| go install | 最低 | - | ★★☆☆☆ | 開発者向け | ○ (要CGO環境) |
 
-## 1. GoReleaser + GitHub Actions (推奨)
+## 1. GitHub Actions (推奨)
 
 ### セットアップ
 
 すでに設定済みです:
-- `.goreleaser.yml`: GoReleaserの設定
-- `.github/workflows/release.yml`: GitHub Actionsワークフロー
+- `.github/workflows/release.yml`: マトリックスビルドワークフロー
 
 ### リリース手順
 
@@ -32,11 +31,20 @@ git push origin v1.0.0
 ```
 
 これだけで、以下が自動的に行われます:
-- Linux/macOS/Windows用のバイナリをビルド
-- tar.gz/zipアーカイブを作成
+- Linux (amd64) をUbuntuランナーでビルド
+- macOS (amd64) をIntel Macランナーでビルド
+- macOS (arm64) をApple Silicon Macランナーでビルド
+- tar.gzアーカイブを作成
 - チェックサムファイルを生成
 - GitHub Releasesにアップロード
 - リリースノートを自動生成
+
+### CGOによる制限
+
+tree-sitterはCGOを必要とするため:
+- 各プラットフォームはネイティブランナーでビルド
+- Linux ARM64は含まれません(GitHub Actionsにネイティブランナーがないため)
+- 必要な場合は、ARM64環境で手動ビルドまたはDocker buildxを使用
 
 ### ユーザーのインストール方法
 

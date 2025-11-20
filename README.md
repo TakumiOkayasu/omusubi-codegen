@@ -39,6 +39,15 @@ make build
 
 詳細は[DISTRIBUTION.md](DISTRIBUTION.md)を参照してください。
 
+### 対応プラットフォーム
+
+- Linux (x86_64)
+- macOS (Intel)
+- macOS (Apple Silicon)
+
+> **Note**: このプロジェクトはtree-sitterを使用しているため、CGOが必須です。
+> Linux ARM64など他のプラットフォームが必要な場合は、該当環境で`make build`を実行してください。
+
 ## 使い方
 
 ### 1. リポジトリ内の抽象クラスを一覧表示
