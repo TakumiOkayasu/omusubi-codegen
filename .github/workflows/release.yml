@@ -63,6 +63,9 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           ARCHIVE_NAME=codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
 
+          # Clean up if directory exists
+          rm -rf ${ARCHIVE_NAME} ${ARCHIVE_NAME}.tar.gz
+
           mkdir -p ${ARCHIVE_NAME}
           cp codegen-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }} ${ARCHIVE_NAME}/codegen
           chmod +x ${ARCHIVE_NAME}/codegen
@@ -70,6 +73,7 @@ jobs:
           cp USAGE_EXAMPLES.md ${ARCHIVE_NAME}/ || true
 
           tar -czf ${ARCHIVE_NAME}.tar.gz ${ARCHIVE_NAME}
+          rm -rf ${ARCHIVE_NAME}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
