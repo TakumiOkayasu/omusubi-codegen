@@ -51,11 +51,8 @@ func (g *Generator) GenerateImplementation(classInfo *model.ClassInfo, derivedCl
 		return fmt.Errorf("failed to generate header: %w", err)
 	}
 
-	// Generate source file
+	// Generate source file (always .cpp regardless of source extension)
 	sourceExt := "cpp"
-	if classInfo.SourceFileExt == "h" {
-		sourceExt = "c"
-	}
 	if err := g.generateSource(classInfo, derivedClassName, headerExt, sourceExt); err != nil {
 		return fmt.Errorf("failed to generate source: %w", err)
 	}
