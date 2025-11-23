@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -61,7 +62,11 @@ func (p *Parser) ParseFile(filePath string) (*model.FileInfo, error) {
 
 // ParseSource parses C++ source code and extracts class information
 func (p *Parser) ParseSource(source []byte) (*model.FileInfo, error) {
-	tree := p.parser.Parse(nil, source)
+	ctx := context.Background()
+	tree, err := p.parser.ParseCtx(ctx, nil, source)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse source: %w", err)
+	}
 	if tree == nil {
 		return nil, fmt.Errorf("failed to parse source: tree is nil")
 	}
