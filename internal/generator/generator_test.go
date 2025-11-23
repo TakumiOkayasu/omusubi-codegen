@@ -15,6 +15,10 @@ func TestToSnakeCase(t *testing.T) {
 		{"IOBuffer", "iobuffer"},
 		{"simple", "simple"},
 		{"ALLCAPS", "allcaps"},
+		{"M5Stack", "m5stack"},
+		{"M5StackConnectableContext", "m5stack_connectable_context"},
+		{"ESP32Device", "esp32device"},
+		{"STM32Controller", "stm32controller"},
 	}
 
 	for _, tt := range tests {

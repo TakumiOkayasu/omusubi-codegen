@@ -238,9 +238,11 @@ func (g *Generator) getOutputPath(filename string) string {
 }
 
 // toSnakeCase converts CamelCase or PascalCase to snake_case
+// Preserves number+uppercase letter combinations (e.g., M5Stack -> m5stack)
 func toSnakeCase(s string) string {
-	// Insert underscore before uppercase letters (except at the start)
-	re := regexp.MustCompile("([a-z0-9])([A-Z])")
+	// Insert underscore before uppercase letters that follow lowercase letters
+	// but NOT after numbers (to keep M5Stack as m5stack, not m5_stack)
+	re := regexp.MustCompile("([a-z])([A-Z])")
 	snake := re.ReplaceAllString(s, "${1}_${2}")
 
 	// Convert to lowercase
