@@ -142,10 +142,8 @@ func (g *Generator) prepareTemplateData(classInfo *model.ClassInfo, derivedClass
 	}
 }
 
-// loadTemplate loads a template file
+// loadTemplate loads a template file from embedded filesystem
 func (g *Generator) loadTemplate(name string) (*template.Template, error) {
-	tmplPath := filepath.Join(g.templateDir, name)
-
 	funcMap := template.FuncMap{
 		"formatParameters":      formatParameters,
 		"formatMethodSignature": formatMethodSignature,
@@ -154,9 +152,18 @@ func (g *Generator) loadTemplate(name string) (*template.Template, error) {
 		"toSnakeCase":          toSnakeCase,
 	}
 
-	tmpl, err := template.New(name).Funcs(funcMap).ParseFiles(tmplPath)
+	// 埋め込みファイルシステムからテンプレートを読み込む
+	tmplPath := "templates/" + name
+	tmplContent, err := templatesFS.ReadFile(tmplPath)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse template %s: %w", tmplPath, err)
+		return nil, fmt.Errorf("failed to read embedded template %s: %w", name, err)
+	}
+
+	tmpl, err := template.New(name).Funcs(funcMap).Parse(string(tmplContent))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse template %s: %w", name, err)
 	}
 
 	return tmpl, nil
