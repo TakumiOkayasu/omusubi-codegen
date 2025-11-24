@@ -246,3 +246,94 @@ func toSnakeCase(s string) string {
 	return strings.ToLower(snake)
 }
 
+// GenerateProject generates a complete PlatformIO project structure
+func (g *Generator) GenerateProject(config *model.ProjectConfig) error {
+	// Create project directory
+	if err := os.MkdirAll(config.ProjectPath, 0755); err != nil {
+		return fmt.Errorf("failed to create project directory: %w", err)
+	}
+
+	// Create src directory
+	srcDir := filepath.Join(config.ProjectPath, "src")
+	if err := os.MkdirAll(srcDir, 0755); err != nil {
+		return fmt.Errorf("failed to create src directory: %w", err)
+	}
+
+	// Generate platformio.ini
+	if err := g.generatePlatformIOConfig(config); err != nil {
+		return fmt.Errorf("failed to generate platformio.ini: %w", err)
+	}
+
+	// Generate main.cpp
+	if err := g.generateMainCpp(config); err != nil {
+		return fmt.Errorf("failed to generate main.cpp: %w", err)
+	}
+
+	// Generate .gitignore
+	if err := g.generateGitignore(config); err != nil {
+		return fmt.Errorf("failed to generate .gitignore: %w", err)
+	}
+
+	return nil
+}
+
+// generatePlatformIOConfig generates platformio.ini file
+func (g *Generator) generatePlatformIOConfig(config *model.ProjectConfig) error {
+	tmpl, err := g.loadTemplate("platformio.ini.tmpl")
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, config); err != nil {
+		return fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	outputPath := filepath.Join(config.ProjectPath, "platformio.ini")
+	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
+		return fmt.Errorf("failed to write platformio.ini: %w", err)
+	}
+
+	return nil
+}
+
+// generateMainCpp generates main.cpp file
+func (g *Generator) generateMainCpp(config *model.ProjectConfig) error {
+	tmpl, err := g.loadTemplate("main.cpp.tmpl")
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, config); err != nil {
+		return fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	outputPath := filepath.Join(config.ProjectPath, "src", "main.cpp")
+	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
+		return fmt.Errorf("failed to write main.cpp: %w", err)
+	}
+
+	return nil
+}
+
+// generateGitignore generates .gitignore file
+func (g *Generator) generateGitignore(config *model.ProjectConfig) error {
+	tmpl, err := g.loadTemplate("gitignore.tmpl")
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, config); err != nil {
+		return fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	outputPath := filepath.Join(config.ProjectPath, ".gitignore")
+	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
+		return fmt.Errorf("failed to write .gitignore: %w", err)
+	}
+
+	return nil
+}
+

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -49,37 +50,76 @@ func newGenerateCmd() *cobra.Command {
 		className    string
 		outputDir    string
 		templateDir  string
+		createProject bool
+		projectName   string
+		board         string
+		coreLibPath   string
+		platformLibPath string
 	)
 
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate C++ implementation from abstract base class",
 		Long: `Generate C++ implementation (.hpp and .cpp) files by overriding
-pure virtual functions from an abstract base class found in the pre-omusubi repository.
+pure virtual functions from an abstract base class found in the omusubi repository.
 
 The command will:
 1. Search for the abstract base class in the specified repository
 2. Extract all pure virtual methods
 3. Prompt for the derived class name
-4. Generate header and source files with empty method bodies`,
+4. Generate header and source files with empty method bodies
+5. Optionally create a complete PlatformIO project structure`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGenerate(repoPath, baseClass, className, outputDir, templateDir)
+			return runGenerate(repoPath, baseClass, className, outputDir, templateDir, createProject, projectName, board, coreLibPath, platformLibPath)
 		},
 	}
 
-	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "Path to pre-omusubi repository (required)")
+	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "Path to omusubi repository (optional, will auto-detect if not provided)")
 	cmd.Flags().StringVarP(&baseClass, "base", "b", "", "Base class name to search for (optional, will prompt if not provided)")
 	cmd.Flags().StringVarP(&className, "class", "c", "", "Derived class name (optional, will prompt if not provided)")
 	cmd.Flags().StringVarP(&outputDir, "output", "o", ".", "Output directory for generated files")
 	cmd.Flags().StringVarP(&templateDir, "templates", "t", "internal/template/templates", "Template directory")
-	cmd.MarkFlagRequired("repo")
+	cmd.Flags().BoolVarP(&createProject, "project", "p", false, "Create a complete PlatformIO project structure")
+	cmd.Flags().StringVar(&projectName, "project-name", "", "Project name for PlatformIO project (required if --project is used)")
+	cmd.Flags().StringVar(&board, "board", "m5stack-core-esp32", "PlatformIO board identifier")
+	cmd.Flags().StringVar(&coreLibPath, "core-lib", "", "Path to omusubi core library (optional, will auto-detect)")
+	cmd.Flags().StringVar(&platformLibPath, "platform-lib", "", "Path to platform library (optional, will auto-detect)")
 
 	return cmd
 }
 
-func runGenerate(repoPath, baseClass, className, outputDir, templateDir string) error {
+func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, createProject bool, projectName string, board string, coreLibPath string, platformLibPath string) error {
 	// Create parser
 	p := parser.New()
+
+	// Auto-detect workspace if paths not provided
+	if repoPath == "" && coreLibPath == "" {
+		fmt.Println("Attempting to auto-detect workspace...")
+		detectedCore, detectedPlatform, err := parser.DetectWorkspace(".")
+		if err != nil {
+			return fmt.Errorf("workspace auto-detection failed: %w\nPlease specify --repo or --core-lib explicitly", err)
+		}
+		coreLibPath = detectedCore
+		platformLibPath = detectedPlatform
+		fmt.Printf("✓ Detected core library: %s\n", coreLibPath)
+		if platformLibPath != "" {
+			fmt.Printf("✓ Detected platform library: %s\n", platformLibPath)
+		}
+		// Set repoPath to core library include path for parsing
+		repoPath = coreLibPath + "/include"
+	} else if repoPath == "" {
+		repoPath = coreLibPath + "/include"
+	}
+
+	// Validate project creation requirements
+	if createProject {
+		if projectName == "" {
+			return fmt.Errorf("--project-name is required when --project is specified")
+		}
+		if coreLibPath == "" {
+			return fmt.Errorf("core library path could not be determined. Please specify --core-lib")
+		}
+	}
 
 	fmt.Println("Searching for abstract classes in repository...")
 	fileInfos, err := p.ParseDirectory(repoPath)
@@ -176,14 +216,68 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string) 
 		}
 	}
 
+	// Determine actual output directory
+	actualOutputDir := outputDir
+	if createProject {
+		actualOutputDir = projectName + "/src"
+	}
+
 	// Create generator
 	gen := generator.New(generator.Config{
 		TemplateDir: templateDir,
-		OutputDir:   outputDir,
+		OutputDir:   actualOutputDir,
 	})
 
+	// Create PlatformIO project if requested
+	if createProject {
+		fmt.Printf("\nCreating PlatformIO project: %s\n", projectName)
+
+		// Calculate relative paths from project to libraries
+		projectAbsPath, err := filepath.Abs(projectName)
+		if err != nil {
+			return fmt.Errorf("failed to get absolute path for project: %w", err)
+		}
+
+		coreLibAbsPath, err := filepath.Abs(coreLibPath)
+		if err != nil {
+			return fmt.Errorf("failed to get absolute path for core library: %w", err)
+		}
+
+		relCoreLibPath, err := filepath.Rel(projectAbsPath, coreLibAbsPath)
+		if err != nil {
+			return fmt.Errorf("failed to calculate relative path to core library: %w", err)
+		}
+
+		var relPlatformLibPath string
+		if platformLibPath != "" {
+			platformLibAbsPath, err := filepath.Abs(platformLibPath)
+			if err != nil {
+				return fmt.Errorf("failed to get absolute path for platform library: %w", err)
+			}
+			relPlatformLibPath, err = filepath.Rel(projectAbsPath, platformLibAbsPath)
+			if err != nil {
+				return fmt.Errorf("failed to calculate relative path to platform library: %w", err)
+			}
+		}
+
+		projectConfig := &model.ProjectConfig{
+			ProjectName:     projectName,
+			ProjectPath:     projectAbsPath,
+			CoreLibPath:     relCoreLibPath,
+			PlatformLibPath: relPlatformLibPath,
+			Board:           board,
+			Framework:       "arduino",
+		}
+
+		if err := gen.GenerateProject(projectConfig); err != nil {
+			return fmt.Errorf("failed to generate project: %w", err)
+		}
+
+		fmt.Printf("  ✓ Created project structure at %s\n", projectName)
+	}
+
 	// Generate files for each selected class
-	fmt.Printf("\nGenerating files...\n")
+	fmt.Printf("\nGenerating implementation files...\n")
 	successCount := 0
 	for _, idx := range selectedIndices {
 		selectedClass := classOptions[idx]
@@ -203,7 +297,14 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string) 
 
 	fmt.Printf("\n✓ Code generation completed!\n")
 	fmt.Printf("Successfully generated: %d/%d classes\n", successCount, len(selectedIndices))
-	fmt.Printf("Output directory: %s\n", outputDir)
+	if createProject {
+		fmt.Printf("Project directory: %s\n", projectName)
+		fmt.Printf("\nTo build and upload:\n")
+		fmt.Printf("  cd %s\n", projectName)
+		fmt.Printf("  pio run -t upload\n")
+	} else {
+		fmt.Printf("Output directory: %s\n", actualOutputDir)
+	}
 	return nil
 }
 

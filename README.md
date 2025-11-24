@@ -5,11 +5,13 @@ C++インターフェース定義から実装スケルトン、テストコー�
 
 ## 特徴
 
-- **C++14対応**: Omusubiフレームワークに準拠したコード生成
+- **C++17対応**: Omusubiフレームワークに準拠したコード生成
 - **Tree-sitterパーサー**: 高速で正確なC++構文解析
-- **自動テスト生成**: Google Testベースのユニットテスト自動生成
-- **ドキュメント生成**: Doxygen形式のドキュメントコメント生成
-- **テンプレートカスタマイズ**: Go html/templateによる柔軟なテンプレート
+- **マルチリポジトリ対応**: コアライブラリとプラットフォーム実装の自動検出
+- **PlatformIOプロジェクト生成**: 完全なプロジェクト構造を自動生成
+- **自動テスト生成**: Google Testベースのユニットテスト自動生成 (実装予定)
+- **ドキュメント生成**: Doxygen形式のドキュメントコメント生成 (実装予定)
+- **テンプレートカスタマイズ**: Go text/templateによる柔軟なテンプレート
 
 ## 要件
 
@@ -54,22 +56,42 @@ make build
 
 ## 使い方
 
+### クイックスタート: PlatformIOプロジェクト生成
+
+ワークスペースディレクトリから実行すると、omusubiコアライブラリとプラットフォーム実装を自動検出し、完全なPlatformIOプロジェクトを生成します:
+
+```bash
+cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクトリ
+./omusubi-codegen generate --project --project-name my-m5stack-project
+```
+
+これにより以下が生成されます:
+- `my-m5stack-project/platformio.ini` (相対パスでライブラリを参照)
+- `my-m5stack-project/src/main.cpp` (基本的なArduinoセットアップ)
+- `my-m5stack-project/src/*.hpp` と `*.cpp` (選択した実装クラス)
+- `my-m5stack-project/.gitignore`
+
 ### 1. リポジトリ内の抽象クラスを一覧表示
 
 ```bash
-./omusubi-codegen parse --repo /path/to/pre-omusubi
+./omusubi-codegen parse --repo /path/to/omusubi/include
 ```
 
 詳細表示:
 ```bash
-./omusubi-codegen parse --repo /path/to/pre-omusubi --verbose
+./omusubi-codegen parse --repo /path/to/omusubi/include --verbose
 ```
 
-### 2. 実装コードを生成
+### 2. 実装コードのみを生成 (プロジェクト構造なし)
 
 基本的な使い方(対話式・複数選択):
 ```bash
-./omusubi-codegen generate --repo /path/to/pre-omusubi
+./omusubi-codegen generate --repo /path/to/omusubi/include
+```
+
+ワークスペースの自動検出を使用:
+```bash
+./omusubi-codegen generate  # カレントディレクトリから omusubi/ を自動検出
 ```
 
 このコマンドを実行すると:

@@ -409,3 +409,63 @@ func readFile(filePath string) ([]byte, error) {
 	}
 	return content, nil
 }
+
+// DetectWorkspace attempts to detect omusubi workspace structure
+// Returns paths to core library and platform library if found
+func DetectWorkspace(startPath string) (coreLibPath, platformLibPath string, err error) {
+	// Try to find omusubi directory (core library)
+	absPath, err := filepath.Abs(startPath)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Search parent directories for workspace structure
+	currentPath := absPath
+	for {
+		// Check if omusubi directory exists
+		corePath := filepath.Join(currentPath, "omusubi")
+		if dirExists(corePath) {
+			// Check if include/omusubi exists (core library structure)
+			if dirExists(filepath.Join(corePath, "include", "omusubi")) {
+				coreLibPath = corePath
+
+				// Look for platform library (e.g., omusubi-m5stack)
+				parentDir := currentPath
+				entries, err := os.ReadDir(parentDir)
+				if err == nil {
+					for _, entry := range entries {
+						if entry.IsDir() && strings.HasPrefix(entry.Name(), "omusubi-") && entry.Name() != "omusubi-codegen" {
+							platformPath := filepath.Join(parentDir, entry.Name())
+							// Verify it has include directory
+							if dirExists(filepath.Join(platformPath, "include")) {
+								platformLibPath = platformPath
+								break
+							}
+						}
+					}
+				}
+
+				return coreLibPath, platformLibPath, nil
+			}
+		}
+
+		// Move to parent directory
+		parentPath := filepath.Dir(currentPath)
+		if parentPath == currentPath {
+			// Reached root directory
+			break
+		}
+		currentPath = parentPath
+	}
+
+	return "", "", fmt.Errorf("workspace not found: could not locate omusubi core library")
+}
+
+// dirExists checks if a directory exists
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}

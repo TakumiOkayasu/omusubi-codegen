@@ -51,21 +51,71 @@ make lint
 ```
 
 ### Running the Tool
+
+#### Basic Usage (Implementation Generation Only)
 ```bash
 # Parse a repository and list abstract classes
-./omusubi-codegen parse --repo /path/to/pre-omusubi
-./omusubi-codegen parse --repo /path/to/pre-omusubi --verbose  # Show method details
+./omusubi-codegen parse --repo /path/to/omusubi/include
+./omusubi-codegen parse --repo /path/to/omusubi/include --verbose  # Show method details
 
 # Generate implementations (interactive mode with multi-select)
-./omusubi-codegen generate --repo /path/to/pre-omusubi
+./omusubi-codegen generate --repo /path/to/omusubi/include
 
 # Generate with CLI arguments
 ./omusubi-codegen generate \
-  --repo /path/to/pre-omusubi \
+  --repo /path/to/omusubi/include \
   --base IDevice \
   --class MyDevice \
   --output ./output
 ```
+
+#### Multi-Repository Workspace Usage (Recommended)
+The tool automatically detects the omusubi workspace structure when run from a project directory:
+
+**Workspace Structure:**
+```
+workspace/
+├── omusubi/                  # Core library
+│   ├── include/omusubi/
+│   └── ...
+├── omusubi-m5stack/          # Platform implementation
+│   ├── include/
+│   └── src/
+└── my-project/               # Your project (generated)
+    ├── platformio.ini
+    ├── src/
+    │   ├── main.cpp
+    │   └── my_device.hpp
+    └── ...
+```
+
+**Auto-detection Example:**
+```bash
+# From workspace directory - auto-detects omusubi/ and omusubi-m5stack/
+./omusubi-codegen generate --project --project-name my-m5stack-project
+
+# Specify paths explicitly
+./omusubi-codegen generate \
+  --project \
+  --project-name my-m5stack-project \
+  --core-lib ./omusubi \
+  --platform-lib ./omusubi-m5stack \
+  --board m5stack-core-esp32
+
+# Generate only implementations (no project structure)
+./omusubi-codegen generate \
+  --core-lib ./omusubi \
+  --output ./my-project/src
+```
+
+**What Gets Generated:**
+- `--project` flag creates:
+  - `platformio.ini` with correct relative paths to libraries
+  - `src/main.cpp` with basic Arduino setup
+  - `.gitignore` for PlatformIO
+  - Implementation files (.hpp/.cpp) in `src/` directory
+- Without `--project`:
+  - Only implementation files (.hpp/.cpp) in specified output directory
 
 ### Development Container
 ```bash
@@ -102,6 +152,8 @@ Generated Files (.hpp + .cpp/.c)
 - Two main commands: `parse` and `generate`
 - Interactive user prompts with survey/v2 (multi-select for class selection)
 - Handles "select all" vs "choose individually" workflow
+- **NEW:** Workspace auto-detection via `parser.DetectWorkspace()`
+- **NEW:** PlatformIO project generation with `--project` flag
 
 **internal/parser/**
 - `Parser` wraps tree-sitter C++ parser
@@ -110,6 +162,7 @@ Generated Files (.hpp + .cpp/.c)
 - AST traversal via `traverseNode()`: Handles namespaces, classes, methods, fields
 - Detects pure virtual methods (`= 0`) to mark classes as abstract
 - Extracts: access levels (public/protected/private), const/static/virtual modifiers, parameters with default values
+- **NEW:** `DetectWorkspace()`: Automatically finds omusubi core and platform libraries in parent directories
 
 **internal/generator/**
 - `Generator`: Manages template rendering and file output
@@ -117,15 +170,21 @@ Generated Files (.hpp + .cpp/.c)
 - Template functions: `formatParameters`, `formatMethodSignature`, `toSnakeCase`
 - File extension handling: .h→.c, .hpp→.cpp
 - Output filenames are automatically snake_cased (e.g., MyDevice → my_device.hpp)
+- **NEW:** `GenerateProject()`: Creates complete PlatformIO project structure
+- **NEW:** Generates `platformio.ini`, `main.cpp`, and `.gitignore`
 
 **internal/model/**
 - Data structures: `ClassInfo`, `MethodInfo`, `ParameterInfo`, `FieldInfo`, `FileInfo`
 - `AccessLevel` enum: Public, Protected, Private
 - `SourceFileExt` field tracks original file extension for correct generation
+- **NEW:** `ProjectConfig`: Holds PlatformIO project configuration with relative library paths
 
 **internal/template/templates/**
 - `class_header.tmpl`: Generates .hpp/.h with class declaration, override methods
 - `class_source.tmpl`: Generates .cpp/.c with empty method implementations
+- **NEW:** `platformio.ini.tmpl`: Generates PlatformIO configuration with library paths
+- **NEW:** `main.cpp.tmpl`: Generates basic Arduino setup code
+- **NEW:** `gitignore.tmpl`: Generates .gitignore for PlatformIO projects
 - Templates use Go text/template with custom functions
 - All method signatures include `override` keyword
 
