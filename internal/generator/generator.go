@@ -16,21 +16,28 @@ import (
 type Generator struct {
 	templateDir string
 	outputDir   string
+	headerDir   string // Optional: separate directory for header files
 }
 
 // Config holds generator configuration
 type Config struct {
 	TemplateDir string
 	OutputDir   string
+	HeaderDir   string // Optional: directory for header files (if different from OutputDir)
 	WithTests   bool
 	WithDocs    bool
 }
 
 // New creates a new code generator
 func New(cfg Config) *Generator {
+	headerDir := cfg.HeaderDir
+	if headerDir == "" {
+		headerDir = cfg.OutputDir
+	}
 	return &Generator{
 		templateDir: cfg.TemplateDir,
 		outputDir:   cfg.OutputDir,
+		headerDir:   headerDir,
 	}
 }
 
@@ -75,7 +82,12 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 	}
 
 	filename := toSnakeCase(derivedClassName) + "." + headerExt
-	outputPath := g.getOutputPath(filename)
+	outputPath := g.getHeaderPath(filename)
+
+	// Ensure header directory exists
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		return fmt.Errorf("failed to create header directory: %w", err)
+	}
 
 	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
 		return fmt.Errorf("failed to write header file: %w", err)
@@ -234,6 +246,11 @@ func (g *Generator) getOutputPath(filename string) string {
 	return filepath.Join(g.outputDir, filename)
 }
 
+// getHeaderPath returns the full path for a header file
+func (g *Generator) getHeaderPath(filename string) string {
+	return filepath.Join(g.headerDir, filename)
+}
+
 // toSnakeCase converts CamelCase or PascalCase to snake_case
 // Preserves number+uppercase letter combinations (e.g., M5Stack -> m5stack)
 func toSnakeCase(s string) string {
@@ -257,6 +274,13 @@ func (g *Generator) GenerateProject(config *model.ProjectConfig) error {
 	srcDir := filepath.Join(config.ProjectPath, "src")
 	if err := os.MkdirAll(srcDir, 0755); err != nil {
 		return fmt.Errorf("failed to create src directory: %w", err)
+	}
+
+	// Create include directory structure: include/omusubi/platform/<device_name>/
+	deviceNameLower := strings.ToLower(config.DeviceName)
+	includeDir := filepath.Join(config.ProjectPath, "include", "omusubi", "platform", deviceNameLower)
+	if err := os.MkdirAll(includeDir, 0755); err != nil {
+		return fmt.Errorf("failed to create include directory: %w", err)
 	}
 
 	// Generate platformio.ini

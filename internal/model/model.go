@@ -79,6 +79,7 @@ type ProjectConfig struct {
 	PlatformLibPath     string   // Relative path to platform library (e.g., "../omusubi-m5stack")
 	Board               string   // PlatformIO board (e.g., "m5stack-core-esp32")
 	Framework           string   // Framework (e.g., "arduino")
+	DeviceName          string   // Device name prefix (e.g., "M5Stack") - used for directory structure
 	AdditionalLibDirs   []string // Additional library directories
 	BuildFlags          []string // Additional build flags
 }

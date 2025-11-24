@@ -222,16 +222,21 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, 
 		}
 	}
 
-	// Determine actual output directory
+	// Determine actual output directories
 	actualOutputDir := outputDir
+	actualHeaderDir := ""
 	if createProject {
 		actualOutputDir = projectName + "/src"
+		// Headers go to include/omusubi/platform/<device_name>/
+		deviceNameLower := strings.ToLower(classPrefix)
+		actualHeaderDir = filepath.Join(projectName, "include", "omusubi", "platform", deviceNameLower)
 	}
 
 	// Create generator
 	gen := generator.New(generator.Config{
 		TemplateDir: templateDir,
 		OutputDir:   actualOutputDir,
+		HeaderDir:   actualHeaderDir,
 	})
 
 	// Create PlatformIO project if requested
@@ -273,6 +278,7 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, 
 			PlatformLibPath: relPlatformLibPath,
 			Board:           board,
 			Framework:       "arduino",
+			DeviceName:      classPrefix,
 		}
 
 		if err := gen.GenerateProject(projectConfig); err != nil {

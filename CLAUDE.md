@@ -79,14 +79,20 @@ workspace/
 │   ├── include/omusubi/
 │   └── ...
 ├── omusubi-m5stack/          # Platform implementation
-│   ├── include/
-│   └── src/
+│   ├── include/omusubi/platform/m5stack/
+│   └── src/platform/m5stack/
 └── my-project/               # Your project (generated)
     ├── platformio.ini
-    ├── src/
-    │   ├── main.cpp
-    │   └── my_device.hpp
-    └── ...
+    ├── include/
+    │   └── omusubi/
+    │       └── platform/
+    │           └── my/           # Device name (lowercase)
+    │               ├── my_device.hpp
+    │               └── ...
+    └── src/
+        ├── main.cpp
+        ├── my_device.cpp
+        └── ...
 ```
 
 **Auto-detection Example:**
@@ -116,9 +122,10 @@ workspace/
   - `platformio.ini` with correct relative paths to libraries
   - `src/main.cpp` with basic Arduino setup
   - `.gitignore` for PlatformIO
-  - Implementation files (.hpp/.cpp) in `src/` directory
+  - Header files (.hpp/.h) in `include/omusubi/platform/<device_name>/`
+  - Implementation files (.cpp/.c) in `src/` directory
 - Without `--project`:
-  - Only implementation files (.hpp/.cpp) in specified output directory
+  - Both header and implementation files in specified output directory
 
 ### Development Container
 ```bash

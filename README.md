@@ -76,7 +76,8 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 これにより以下が生成されます:
 - `my-m5stack-project/platformio.ini` (相対パスでライブラリを参照)
 - `my-m5stack-project/src/main.cpp` (基本的なArduinoセットアップ)
-- `my-m5stack-project/src/*.hpp` と `*.cpp` (選択した実装クラス)
+- `my-m5stack-project/include/omusubi/platform/<device_name>/*.hpp` (ヘッダーファイル)
+- `my-m5stack-project/src/*.cpp` (実装ファイル)
 - `my-m5stack-project/.gitignore`
 
 ### 1. リポジトリ内の抽象クラスを一覧表示
