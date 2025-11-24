@@ -45,16 +45,17 @@ from interface definitions.`,
 
 func newGenerateCmd() *cobra.Command {
 	var (
-		repoPath     string
-		baseClass    string
-		className    string
-		outputDir    string
-		templateDir  string
-		createProject bool
-		projectName   string
-		board         string
-		coreLibPath   string
+		repoPath        string
+		baseClass       string
+		className       string
+		outputDir       string
+		templateDir     string
+		createProject   bool
+		projectName     string
+		board           string
+		coreLibPath     string
 		platformLibPath string
+		useLegacyName   bool
 	)
 
 	cmd := &cobra.Command{
@@ -70,7 +71,7 @@ The command will:
 4. Generate header and source files with empty method bodies
 5. Optionally create a complete PlatformIO project structure`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGenerate(repoPath, baseClass, className, outputDir, templateDir, createProject, projectName, board, coreLibPath, platformLibPath)
+			return runGenerate(repoPath, baseClass, className, outputDir, templateDir, createProject, projectName, board, coreLibPath, platformLibPath, useLegacyName)
 		},
 	}
 
@@ -84,18 +85,23 @@ The command will:
 	cmd.Flags().StringVar(&board, "board", "m5stack-core-esp32", "PlatformIO board identifier")
 	cmd.Flags().StringVar(&coreLibPath, "core-lib", "", "Path to omusubi core library (optional, will auto-detect)")
 	cmd.Flags().StringVar(&platformLibPath, "platform-lib", "", "Path to platform library (optional, will auto-detect)")
+	cmd.Flags().BoolVar(&useLegacyName, "legacy-name", false, "Use legacy 'pre-omusubi' directory names (alpha version support, will be removed in future)")
 
 	return cmd
 }
 
-func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, createProject bool, projectName string, board string, coreLibPath string, platformLibPath string) error {
+func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, createProject bool, projectName string, board string, coreLibPath string, platformLibPath string, useLegacyName bool) error {
 	// Create parser
 	p := parser.New()
 
 	// Auto-detect workspace if paths not provided
 	if repoPath == "" && coreLibPath == "" {
-		fmt.Println("Attempting to auto-detect workspace...")
-		detectedCore, detectedPlatform, err := parser.DetectWorkspace(".")
+		libNameDisplay := "omusubi"
+		if useLegacyName {
+			libNameDisplay = "pre-omusubi (alpha)"
+		}
+		fmt.Printf("Attempting to auto-detect %s workspace...\n", libNameDisplay)
+		detectedCore, detectedPlatform, err := parser.DetectWorkspace(".", useLegacyName)
 		if err != nil {
 			return fmt.Errorf("workspace auto-detection failed: %w\nPlease specify --repo or --core-lib explicitly", err)
 		}

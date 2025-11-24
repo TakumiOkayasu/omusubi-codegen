@@ -412,8 +412,17 @@ func readFile(filePath string) ([]byte, error) {
 
 // DetectWorkspace attempts to detect omusubi workspace structure
 // Returns paths to core library and platform library if found
-func DetectWorkspace(startPath string) (coreLibPath, platformLibPath string, err error) {
-	// Try to find omusubi directory (core library)
+// If useLegacyName is true, searches for "pre-omusubi" instead of "omusubi"
+func DetectWorkspace(startPath string, useLegacyName bool) (coreLibPath, platformLibPath string, err error) {
+	// Determine core library directory name
+	coreLibName := "omusubi"
+	platformPrefix := "omusubi-"
+	if useLegacyName {
+		coreLibName = "pre-omusubi"
+		platformPrefix = "pre-omusubi-"
+	}
+
+	// Try to find omusubi/pre-omusubi directory (core library)
 	absPath, err := filepath.Abs(startPath)
 	if err != nil {
 		return "", "", err
@@ -422,19 +431,19 @@ func DetectWorkspace(startPath string) (coreLibPath, platformLibPath string, err
 	// Search parent directories for workspace structure
 	currentPath := absPath
 	for {
-		// Check if omusubi directory exists
-		corePath := filepath.Join(currentPath, "omusubi")
+		// Check if core library directory exists
+		corePath := filepath.Join(currentPath, coreLibName)
 		if dirExists(corePath) {
 			// Check if include/omusubi exists (core library structure)
 			if dirExists(filepath.Join(corePath, "include", "omusubi")) {
 				coreLibPath = corePath
 
-				// Look for platform library (e.g., omusubi-m5stack)
+				// Look for platform library (e.g., omusubi-m5stack or pre-omusubi-m5stack)
 				parentDir := currentPath
 				entries, err := os.ReadDir(parentDir)
 				if err == nil {
 					for _, entry := range entries {
-						if entry.IsDir() && strings.HasPrefix(entry.Name(), "omusubi-") && entry.Name() != "omusubi-codegen" {
+						if entry.IsDir() && strings.HasPrefix(entry.Name(), platformPrefix) && entry.Name() != "omusubi-codegen" && entry.Name() != "pre-omusubi-codegen" {
 							platformPath := filepath.Join(parentDir, entry.Name())
 							// Verify it has include directory
 							if dirExists(filepath.Join(platformPath, "include")) {
@@ -458,6 +467,9 @@ func DetectWorkspace(startPath string) (coreLibPath, platformLibPath string, err
 		currentPath = parentPath
 	}
 
+	if useLegacyName {
+		return "", "", fmt.Errorf("workspace not found: could not locate pre-omusubi core library (alpha version)")
+	}
 	return "", "", fmt.Errorf("workspace not found: could not locate omusubi core library")
 }
 

@@ -94,6 +94,9 @@ workspace/
 # From workspace directory - auto-detects omusubi/ and omusubi-m5stack/
 ./omusubi-codegen generate --project --project-name my-m5stack-project
 
+# For alpha version (pre-omusubi) - will be removed after release
+./omusubi-codegen generate --legacy-name --project --project-name my-m5stack-project
+
 # Specify paths explicitly
 ./omusubi-codegen generate \
   --project \

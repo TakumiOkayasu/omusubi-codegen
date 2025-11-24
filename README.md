@@ -65,6 +65,14 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 ./omusubi-codegen generate --project --project-name my-m5stack-project
 ```
 
+**アルファ版 (pre-omusubi) の場合:**
+```bash
+# pre-omusubi/ と pre-omusubi-m5stack/ を自動検出
+./omusubi-codegen generate --legacy-name --project --project-name my-m5stack-project
+```
+
+> **Note**: `--legacy-name` フラグは、正式リリース後に削除される予定です。
+
 これにより以下が生成されます:
 - `my-m5stack-project/platformio.ini` (相対パスでライブラリを参照)
 - `my-m5stack-project/src/main.cpp` (基本的なArduinoセットアップ)
