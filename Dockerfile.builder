@@ -6,7 +6,7 @@ ARG TARGETPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
 
-FROM --platform=$TARGETPLATFORM golang:${GO_VERSION} AS builder
+FROM golang:${GO_VERSION} AS builder
 
 WORKDIR /build
 
@@ -36,7 +36,7 @@ RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     ./cmd/codegen
 
 # Runtime stage
-FROM --platform=$TARGETPLATFORM debian:bookworm-slim
+FROM debian:bookworm-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
