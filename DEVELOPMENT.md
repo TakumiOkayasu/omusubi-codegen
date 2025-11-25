@@ -157,7 +157,7 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 ### データフロー
 
 ```
-C++ Header File
+C++ Header File (.hpp/.h)
     ↓
 Parser (tree-sitter)
     ↓
@@ -165,7 +165,7 @@ Model (ClassInfo, MethodInfo, etc.)
     ↓
 Generator + Templates
     ↓
-Generated Files (.cpp, _test.cpp, _doc.hpp)
+Generated Files (.hpp/.h + .cpp)
 ```
 
 ## tree-sitterの使い方
@@ -209,10 +209,12 @@ echo "class Foo {};" | tree-sitter parse --language cpp
 
 ### テンプレート変数
 
-- `.Name`: クラス名
+- `.ClassName`: 派生クラス名
+- `.BaseClass`: 基底クラス名
+- `.BaseClassExt`: ファイル拡張子 (h/hpp)
 - `.Namespace`: 名前空間
-- `.Methods`: メソッドのリスト
-- `.BaseClasses`: 基底クラスのリスト
+- `.Methods`: メソッドのリスト (MethodInfo配列)
+- `.HasNamespace`: 名前空間の有無 (Boolean)
 
 ### 新しいテンプレートの追加
 

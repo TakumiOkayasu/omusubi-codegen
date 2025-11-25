@@ -123,7 +123,7 @@ workspace/
   - `src/main.cpp` with basic Arduino setup
   - `.gitignore` for PlatformIO
   - Header files (.hpp/.h) in `include/omusubi/platform/<device_name>/`
-  - Implementation files (.cpp/.c) in `src/` directory
+  - Implementation files (.cpp) in `src/` directory
 - Without `--project`:
   - Both header and implementation files in specified output directory
 
@@ -152,7 +152,7 @@ Model (ClassInfo, MethodInfo) → Extract pure virtual methods
     ↓
 Generator + Templates → Execute Go templates
     ↓
-Generated Files (.hpp + .cpp/.c)
+Generated Files (.hpp/.h + .cpp)
 ```
 
 ### Package Structure
@@ -178,7 +178,7 @@ Generated Files (.hpp + .cpp/.c)
 - `Generator`: Manages template rendering and file output
 - `GenerateImplementation()`: Creates both header and source files
 - Template functions: `formatParameters`, `formatMethodSignature`, `toSnakeCase`
-- File extension handling: .h→.c, .hpp→.cpp
+- File extension handling: .h→.h+.cpp, .hpp→.hpp+.cpp (source is always .cpp)
 - Output filenames are automatically snake_cased (e.g., MyDevice → my_device.hpp)
 - **NEW:** `GenerateProject()`: Creates complete PlatformIO project structure
 - **NEW:** Generates `platformio.ini`, `main.cpp`, and `.gitignore`
@@ -191,10 +191,13 @@ Generated Files (.hpp + .cpp/.c)
 
 **internal/generator/templates/**
 - `class_header.tmpl`: Generates .hpp/.h with class declaration, override methods
-- `class_source.tmpl`: Generates .cpp/.c with empty method implementations
+- `class_source.tmpl`: Generates .cpp with empty method implementations
 - `platformio.ini.tmpl`: Generates PlatformIO configuration with library paths
 - `main.cpp.tmpl`: Generates basic Arduino setup code
 - `gitignore.tmpl`: Generates .gitignore for PlatformIO projects
+- `class_test.tmpl`: (未実装) Google Test用テストファイルテンプレート
+- `class_doc.tmpl`: (未実装) Doxygen形式ドキュメントテンプレート
+- `class_impl.tmpl`: (未使用) 将来の拡張用テンプレート
 - Templates use Go text/template with custom functions
 - All method signatures include `override` keyword
 
@@ -214,10 +217,11 @@ Generated Files (.hpp + .cpp/.c)
 
 **File Extension Logic:**
 - Original file extension (.h or .hpp) is stored in `ClassInfo.SourceFileExt`
-- Generated files match the original convention:
-  - `.h` source → `.h` + `.c` output
+- Generated header files match the original convention (.h or .hpp)
+- Generated source files are always `.cpp` (C++ only)
+  - `.h` source → `.h` + `.cpp` output
   - `.hpp` source → `.hpp` + `.cpp` output
-- Include statements in generated files use the correct extension
+- Include statements in generated files use the correct header extension
 
 **Interactive CLI Flow:**
 1. User runs `generate` command with `--repo`

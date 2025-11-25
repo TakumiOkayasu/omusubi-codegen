@@ -51,8 +51,8 @@ tree-sitterはCGOを必要とするため:
 リリース後、ユーザーは以下の方法でインストールできます:
 
 ```bash
-# Homebrew (macOS/Linux) - 将来的に対応可能
-brew install TakumiOkayasu/tap/codegen
+# Homebrew (macOS/Linux) - 将来対応予定
+# brew install TakumiOkayasu/tap/codegen
 
 # 手動ダウンロード
 # GitHub ReleasesからOS別のバイナリをダウンロード
@@ -270,11 +270,12 @@ goreleaser release --snapshot --skip=publish --clean
 
 ### クロスコンパイルエラー
 
-```bash
-# CGOを無効化
-export CGO_ENABLED=0
+> **注意**: このプロジェクトはtree-sitterを使用しているため、CGOが必須です。
+> `CGO_ENABLED=0` ではビルドできません。
+> クロスコンパイルが必要な場合は、GitHub ActionsまたはDocker buildxを使用してください。
 
-# 再ビルド
+```bash
+# ローカルでのビルドは現在のプラットフォームのみ対応
 make release
 ```
 

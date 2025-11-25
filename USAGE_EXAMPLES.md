@@ -1,5 +1,26 @@
 # 使用例
 
+## クイックスタート: PlatformIOプロジェクト生成
+
+最も一般的な使用方法です。ワークスペースディレクトリから実行すると、完全なPlatformIOプロジェクトを生成できます。
+
+```bash
+# ワークスペース構造
+# workspace/
+# ├── omusubi/              # コアライブラリ
+# └── omusubi-m5stack/      # プラットフォーム実装
+
+cd /path/to/workspace
+./omusubi-codegen generate --project --project-name my-m5stack-project
+```
+
+生成されるファイル:
+- `my-m5stack-project/platformio.ini`
+- `my-m5stack-project/src/main.cpp`
+- `my-m5stack-project/include/omusubi/platform/<device_name>/*.hpp`
+- `my-m5stack-project/src/*.cpp`
+- `my-m5stack-project/.gitignore`
+
 ## 基本的なワークフロー
 
 ### 1. omusubiリポジトリをクローン
@@ -68,7 +89,7 @@ Namespace: omusubi
     - void reset()
 ```
 
-### 5. 対話式で実装コードを生成
+### 5. 対話式で実装コードを生成（マルチセレクト対応）
 
 ```bash
 ./omusubi-codegen generate --repo ~/projects/omusubi/include
@@ -78,26 +99,38 @@ Namespace: omusubi
 ```
 Searching for abstract classes in repository...
 
-Available abstract classes:
-  - IDevice (from /home/user/projects/omusubi/include/device/idevice.hpp)
-  - IGpio (from /home/user/projects/omusubi/include/hal/igpio.hpp)
-  - ITimer (from /home/user/projects/omusubi/include/hal/itimer.hpp)
+? Found 3 abstract classes. Select all?
+> No - Choose individually
+  Yes - Select all classes
+```
 
-Enter base class name: IDevice
-Searching for abstract class 'IDevice'...
-Found abstract class: IDevice
-Namespace: omusubi
-Pure virtual methods: 4
+個別選択を選んだ場合:
+```
+? Select abstract classes to implement:
+  [x] omusubi::IDevice (from device/idevice.hpp)
+  [x] omusubi::IGpio (from hal/igpio.hpp)
+> [ ] omusubi::ITimer (from hal/itimer.hpp)
+```
 
-Enter derived class name: MyDevice
+操作方法:
+- `↑`/`↓`: カーソル移動
+- `Space`: 選択/解除
+- `Enter`: 確定
 
-Generating files for MyDevice...
-Generated: ./mydevice.hpp
-Generated: ./mydevice.cpp
+```
+? Enter class name prefix (default: My): Custom
+
+Generating files...
+Generated: ./custom_device.hpp
+Generated: ./custom_device.cpp
+Generated: ./custom_gpio.hpp
+Generated: ./custom_gpio.cpp
 
 ✓ Code generation completed successfully!
 Generated files in: .
 ```
+
+**注意**: ファイル名は自動的にスネークケース (`snake_case`) に変換されます。
 
 ### 6. コマンドライン引数で直接指定
 
@@ -117,8 +150,8 @@ Namespace: omusubi
 Pure virtual methods: 4
 
 Generating files for MyDevice...
-Generated: ./my_implementation/mydevice.hpp
-Generated: ./my_implementation/mydevice.cpp
+Generated: ./my_implementation/my_device.hpp
+Generated: ./my_implementation/my_device.cpp
 
 ✓ Code generation completed successfully!
 Generated files in: ./my_implementation
@@ -141,7 +174,18 @@ cp -r internal/generator/templates my_templates
   --templates ./my_templates
 ```
 
-### 複数のクラスを一括生成(シェルスクリプト)
+### 複数のクラスを一括生成
+
+対話式のマルチセレクト機能を使って、複数のクラスを一度に生成できます:
+
+```bash
+./omusubi-codegen generate --repo ~/projects/omusubi/include
+
+# "Yes - Select all classes" を選択するか、
+# 個別選択モードでSpaceキーで複数選択してEnter
+```
+
+または、シェルスクリプトで自動化する場合:
 
 ```bash
 #!/bin/bash
@@ -167,6 +211,27 @@ done
 
 echo "All classes generated in $OUTPUT_DIR"
 ```
+
+### PlatformIOプロジェクトの詳細な設定
+
+```bash
+# ボードとライブラリパスを明示的に指定
+./omusubi-codegen generate \
+  --project \
+  --project-name my-custom-project \
+  --core-lib ./omusubi \
+  --platform-lib ./omusubi-m5stack \
+  --board esp32-s3-devkitc-1
+```
+
+### アルファ版 (pre-omusubi) の場合
+
+```bash
+# pre-omusubi/ と pre-omusubi-m5stack/ を自動検出
+./omusubi-codegen generate --legacy-name --project --project-name my-project
+```
+
+> **Note**: `--legacy-name` フラグは正式リリース後に削除される予定です。
 
 ## トラブルシューティング
 
