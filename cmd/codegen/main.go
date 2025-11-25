@@ -293,7 +293,12 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, 
 	successCount := 0
 	for _, idx := range selectedIndices {
 		selectedClass := classOptions[idx]
-		derivedName := classPrefix + selectedClass.Name
+		// Capitalize first letter of base class name to ensure proper CamelCase
+		baseName := selectedClass.Name
+		if len(baseName) > 0 {
+			baseName = strings.ToUpper(baseName[:1]) + baseName[1:]
+		}
+		derivedName := classPrefix + baseName
 
 		fmt.Printf("\n[%d/%d] Generating %s from %s...\n",
 			successCount+1, len(selectedIndices), derivedName, selectedClass.FullName)
