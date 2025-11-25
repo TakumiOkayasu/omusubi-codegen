@@ -75,17 +75,57 @@ The command will:
 		},
 	}
 
-	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "Path to omusubi repository (optional, will auto-detect if not provided)")
-	cmd.Flags().StringVarP(&baseClass, "base", "b", "", "Base class name to search for (optional, will prompt if not provided)")
-	cmd.Flags().StringVarP(&className, "class", "c", "", "Derived class name (optional, will prompt if not provided)")
-	cmd.Flags().StringVarP(&outputDir, "output", "o", ".", "Output directory for generated files")
-	cmd.Flags().StringVarP(&templateDir, "templates", "t", "internal/template/templates", "Template directory")
-	cmd.Flags().BoolVarP(&createProject, "project", "p", false, "Create a complete PlatformIO project structure")
-	cmd.Flags().StringVar(&projectName, "project-name", "", "Project name for PlatformIO project (required if --project is used)")
-	cmd.Flags().StringVar(&board, "board", "m5stack-core-esp32", "PlatformIO board identifier")
-	cmd.Flags().StringVar(&coreLibPath, "core-lib", "", "Path to omusubi core library (optional, will auto-detect)")
-	cmd.Flags().StringVar(&platformLibPath, "platform-lib", "", "Path to platform library (optional, will auto-detect)")
-	cmd.Flags().BoolVar(&useLegacyName, "legacy-name", false, "Use legacy 'pre-omusubi' directory names (alpha version support, will be removed in future)")
+	cmd.Flags().StringVarP(&repoPath, "repo", "r", "",
+		"Path to omusubi repository (optional, will auto-detect if not provided)\n"+
+		"Example: --repo /path/to/omusubi/include")
+
+	cmd.Flags().StringVarP(&baseClass, "base", "b", "",
+		"Base class name to search for (optional, will prompt if not provided)\n"+
+		"Example: --base IDevice")
+
+	cmd.Flags().StringVarP(&className, "class", "c", "",
+		"Derived class name prefix (optional, will prompt if not provided)\n"+
+		"Example: --class M5Stack (generates M5StackXxx classes)")
+
+	cmd.Flags().StringVarP(&outputDir, "output", "o", ".",
+		"Output directory for generated implementation files (.cpp)\n"+
+		"Default: current directory\n"+
+		"When --project is used: <project-name>/src")
+
+	cmd.Flags().StringVarP(&templateDir, "templates", "t", "internal/template/templates",
+		"Template directory (advanced users only)\n"+
+		"Default: embedded templates")
+
+	cmd.Flags().BoolVarP(&createProject, "project", "p", false,
+		"Create a complete PlatformIO project structure\n"+
+		"Generates: platformio.ini, src/main.cpp, include/ directory, .gitignore\n"+
+		"Requires: --project-name")
+
+	cmd.Flags().StringVar(&projectName, "project-name", "",
+		"Project name for PlatformIO project (required when --project is used)\n"+
+		"Example: --project-name my-m5stack-project\n"+
+		"Creates directory: ./my-m5stack-project/")
+
+	cmd.Flags().StringVar(&board, "board", "m5stack-core-esp32",
+		"PlatformIO board identifier (used with --project)\n"+
+		"Common boards: m5stack-core-esp32, esp32dev, esp32-s3-devkitc-1\n"+
+		"See: https://docs.platformio.org/en/latest/boards/")
+
+	cmd.Flags().StringVar(&coreLibPath, "core-lib", "",
+		"Path to omusubi core library (optional, will auto-detect)\n"+
+		"Auto-detection searches parent directories for 'omusubi/' folder\n"+
+		"Example: --core-lib ../omusubi")
+
+	cmd.Flags().StringVar(&platformLibPath, "platform-lib", "",
+		"Path to platform implementation library (optional, will auto-detect)\n"+
+		"Auto-detection searches for 'omusubi-*/' folders (e.g., omusubi-m5stack)\n"+
+		"Example: --platform-lib ../omusubi-m5stack")
+
+	cmd.Flags().BoolVar(&useLegacyName, "legacy-name", false,
+		"Use legacy 'pre-omusubi' directory names for alpha version support\n"+
+		"Searches for 'pre-omusubi' instead of 'omusubi'\n"+
+		"This flag will be removed after official release\n"+
+		"Example: --legacy-name --project --project-name my-project")
 
 	return cmd
 }
