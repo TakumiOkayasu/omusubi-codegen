@@ -189,12 +189,12 @@ Generated Files (.hpp + .cpp/.c)
 - `SourceFileExt` field tracks original file extension for correct generation
 - **NEW:** `ProjectConfig`: Holds PlatformIO project configuration with relative library paths
 
-**internal/template/templates/**
+**internal/generator/templates/**
 - `class_header.tmpl`: Generates .hpp/.h with class declaration, override methods
 - `class_source.tmpl`: Generates .cpp/.c with empty method implementations
-- **NEW:** `platformio.ini.tmpl`: Generates PlatformIO configuration with library paths
-- **NEW:** `main.cpp.tmpl`: Generates basic Arduino setup code
-- **NEW:** `gitignore.tmpl`: Generates .gitignore for PlatformIO projects
+- `platformio.ini.tmpl`: Generates PlatformIO configuration with library paths
+- `main.cpp.tmpl`: Generates basic Arduino setup code
+- `gitignore.tmpl`: Generates .gitignore for PlatformIO projects
 - Templates use Go text/template with custom functions
 - All method signatures include `override` keyword
 
@@ -271,7 +271,7 @@ Test data is in `testdata/` directory.
 
 ## Template Customization
 
-Templates are in `internal/template/templates/` and use Go's `text/template`:
+Templates are in `internal/generator/templates/` and use Go's `text/template`:
 
 **Available template variables:**
 - `.ClassName`: Derived class name
@@ -288,7 +288,7 @@ Templates are in `internal/template/templates/` and use Go's `text/template`:
 - `toLower`, `toUpper`: String case conversion
 
 **To modify templates:**
-1. Edit files in `internal/template/templates/`
+1. Edit files in `internal/generator/templates/`
 2. Templates are embedded via `go:embed`, so rebuild is required: `make clean && make build`
 
 ## Key Conventions

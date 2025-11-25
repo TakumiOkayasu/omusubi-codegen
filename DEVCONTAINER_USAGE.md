@@ -20,7 +20,7 @@
    ./omusubi-codegen --help
    ```
 
-## pre-omusubiリポジトリへのアクセス
+## omusubiリポジトリへのアクセス
 
 ### 方法1: ホストのディレクトリをマウント（推奨）
 
@@ -30,26 +30,26 @@
 volumes:
   # ... 既存のvolumes ...
 
-  # pre-omusubiをマウント
+  # omusubiをマウント
   - type: bind
-    source: ${PRE_OMUSUBI_PATH:-../pre-omusubi}
-    target: /pre-omusubi
+    source: ${OMUSUBI_PATH:-../omusubi}
+    target: /omusubi
     read_only: true
 ```
 
 `.env`に追加:
 
 ```bash
-# pre-omusubiリポジトリのパス
-PRE_OMUSUBI_PATH=/Users/yamazaki/prog/omusubi_project/pre-omusubi
+# omusubiリポジトリのパス
+OMUSUBI_PATH=/path/to/omusubi
 ```
 
 devcontainer再起動後:
 
 ```bash
 # devcontainer内で
-./omusubi-codegen parse --repo /pre-omusubi
-./omusubi-codegen generate --repo /pre-omusubi
+./omusubi-codegen parse --repo /omusubi/include
+./omusubi-codegen generate --repo /omusubi/include
 ```
 
 ### 方法2: devcontainer内でクローン
@@ -57,23 +57,23 @@ devcontainer再起動後:
 ```bash
 # devcontainer内で
 cd /workspace
-git clone https://github.com/TakumiOkayasu/pre-omusubi ../pre-omusubi
+git clone https://github.com/TakumiOkayasu/omusubi ../omusubi
 
 # 使用
-./omusubi-codegen parse --repo ../pre-omusubi
+./omusubi-codegen parse --repo ../omusubi/include
 ```
 
 ### 方法3: /workspaceの親ディレクトリを使う
 
 デフォルトでは`/workspace`がマウントされています:
-- ホスト: `/Users/yamazaki/prog/omusubi_project/platform_builder`
+- ホスト: プロジェクトディレクトリ
 - devcontainer: `/workspace`
 
-pre-omusubiが同じ階層にある場合:
+omusubiが同じ階層にある場合:
 ```
-/Users/yamazaki/prog/omusubi_project/
-├── platform_builder/  (マウント済み)
-└── pre-omusubi/       (アクセスしたい)
+workspace/
+├── omusubi-codegen/   (マウント済み)
+└── omusubi/           (アクセスしたい)
 ```
 
 残念ながらデフォルトでは親ディレクトリはマウントされていないため、方法1または2を使用してください。
@@ -84,24 +84,24 @@ pre-omusubiが同じ階層にある場合:
 
 ```bash
 # devcontainer内で
-./omusubi-codegen parse --repo /pre-omusubi --verbose
+./omusubi-codegen parse --repo /omusubi/include --verbose
 ```
 
 ### 実装コードの生成
 
 ```bash
 # 対話式
-./omusubi-codegen generate --repo /pre-omusubi
+./omusubi-codegen generate --repo /omusubi/include
 
 # コマンドライン指定
 ./omusubi-codegen generate \
-  --repo /pre-omusubi \
+  --repo /omusubi/include \
   --base IDevice \
   --class MyDevice \
   --output /workspace/output
 ```
 
-生成されたファイルは`/workspace/output`に作成され、ホストの`platform_builder/output/`からもアクセスできます。
+生成されたファイルは`/workspace/output`に作成され、ホストからもアクセスできます。
 
 ## ビルドされたバイナリについて
 
@@ -124,7 +124,7 @@ file omusubi-codegen
 ```bash
 # ホスト(macOS)で
 brew install go
-cd /Users/yamazaki/prog/omusubi_project/platform_builder
+cd /path/to/omusubi-codegen
 make build
 
 # macOS用バイナリが生成される
@@ -135,7 +135,7 @@ make build
 
 ```bash
 # ホスト(macOS)で
-./scripts/run-in-docker.sh parse --repo /path/to/pre-omusubi
+./scripts/run-in-docker.sh parse --repo /path/to/omusubi/include
 ```
 
 ### オプション3: GitHub Releasesからダウンロード
@@ -143,10 +143,9 @@ make build
 リリース後、macOS用ビルド済みバイナリをダウンロード:
 
 ```bash
-# 将来のリリース後
-curl -L https://github.com/TakumiOkayasu/omusubi-codegen/releases/download/v1.0.0/omusubi-codegen-1.0.0-darwin-arm64.tar.gz -o omusubi-codegen.tar.gz
+# 将来のリリース後（バージョン番号は適宜置き換えてください）
+curl -L https://github.com/TakumiOkayasu/omusubi-codegen/releases/download/vX.Y.Z/omusubi-codegen-X.Y.Z-darwin-arm64.tar.gz -o omusubi-codegen.tar.gz
 tar -xzf omusubi-codegen.tar.gz
-cd omusubi-codegen-1.0.0-darwin-arm64/
 ./omusubi-codegen --help  # ✅ 動作する
 ```
 
@@ -160,7 +159,7 @@ cd omusubi-codegen-1.0.0-darwin-arm64/
 # 3. devcontainer内でビルド・テスト
 make build
 make test
-./omusubi-codegen parse --repo /pre-omusubi
+./omusubi-codegen parse --repo /omusubi/include
 ```
 
 ### 実際の使用時
@@ -173,7 +172,7 @@ brew install go
 make build
 
 # macOSで実行
-./omusubi-codegen generate --repo ~/projects/pre-omusubi
+./omusubi-codegen generate --repo ~/projects/omusubi/include
 ```
 
 ## トラブルシューティング
@@ -191,9 +190,9 @@ make build
 1. devcontainer内で実行する
 2. または、macOSでリビルド: `brew install go && make build`
 
-### エラー: /pre-omusubi: no such file or directory
+### エラー: /omusubi: no such file or directory
 
-**原因**: pre-omusubiがマウントされていません
+**原因**: omusubiがマウントされていません
 
 **解決策**:
 1. `.devcontainer/compose.yaml`にvolumeを追加（上記「方法1」参照）

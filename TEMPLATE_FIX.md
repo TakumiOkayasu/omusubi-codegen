@@ -5,8 +5,8 @@
 CIでビルドされたバイナリでは、テンプレートファイルが外部ファイルとして存在しないため、以下のエラーが発生します：
 
 ```
-failed to parse template internal/template/templates/class_header.tmpl:
-open internal/template/templates/class_header.tmpl: no such file or directory
+failed to parse template internal/generator/templates/class_header.tmpl:
+open internal/generator/templates/class_header.tmpl: no such file or directory
 ```
 
 ## 原因
@@ -27,12 +27,7 @@ Go 1.16+ の `embed` パッケージを使用してテンプレートをバイ�
 
 ### ステップ1: テンプレートファイルの配置
 
-テンプレートファイルを `internal/generator/templates/` ディレクトリに配置します：
-
-```bash
-mkdir -p internal/generator/templates
-cp internal/template/templates/*.tmpl internal/generator/templates/
-```
+テンプレートファイルは `internal/generator/templates/` ディレクトリに配置されています。
 
 ### ステップ2: `internal/generator/templates.go` を作成
 
@@ -102,7 +97,7 @@ func (g *Generator) loadTemplate(name string) (*template.Template, error) {
 
 ```bash
 make build
-./omusubi-codegen generate --repo /path/to/pre-omusubi
+./omusubi-codegen generate --repo /path/to/omusubi/include
 ```
 
 ## 代替案: 開発時のフォールバック
@@ -156,7 +151,7 @@ make build
 # 生成されたバイナリを別のディレクトリに移動してテスト
 cp ./omusubi-codegen /tmp/
 cd /tmp
-./omusubi-codegen generate --repo /path/to/pre-omusubi
+./omusubi-codegen generate --repo /path/to/omusubi/include
 ```
 
 これで、テンプレートファイルが外部に存在しなくてもバイナリが正常に動作するはずです。

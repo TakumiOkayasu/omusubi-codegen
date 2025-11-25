@@ -29,7 +29,7 @@ func main() {
 
 func newRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "codegen",
+		Use:   "omusubi-codegen",
 		Short: "Omusubi Platform Code Generator",
 		Long: `A code generation tool for the Omusubi embedded framework.
 Automatically generates C++ implementation skeletons, tests, and documentation
@@ -92,7 +92,7 @@ The command will:
 		"Default: current directory\n"+
 		"When --project is used: <project-name>/src")
 
-	cmd.Flags().StringVarP(&templateDir, "templates", "t", "internal/template/templates",
+	cmd.Flags().StringVarP(&templateDir, "templates", "t", "internal/generator/templates",
 		"Template directory (advanced users only)\n"+
 		"Default: embedded templates")
 
@@ -379,15 +379,15 @@ func newParseCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "parse",
-		Short: "Parse pre-omusubi repository and list abstract classes",
-		Long: `Parse all header files in the pre-omusubi repository and display
+		Short: "Parse omusubi repository and list abstract classes",
+		Long: `Parse all header files in the omusubi repository and display
 information about abstract classes and their pure virtual methods.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runParse(repoPath, verbose)
 		},
 	}
 
-	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "Path to pre-omusubi repository (required)")
+	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "Path to omusubi repository (required)")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Show detailed method information")
 	cmd.MarkFlagRequired("repo")
 

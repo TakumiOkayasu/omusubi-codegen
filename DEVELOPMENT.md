@@ -74,7 +74,7 @@ UID=501
 GID=20
 ```
 
-**デフォルト値:** `.env.example`に記載されている`platform-builder`が使用されます。
+**デフォルト値:** `.env.example`に記載されている`omusubi-codegen`が使用されます。
 
 #### Docker Composeでの起動 (オプション)
 
@@ -114,7 +114,7 @@ make deps
 make build
 ```
 
-バイナリは `codegen` として生成されます。
+バイナリは `omusubi-codegen` として生成されます。
 
 ## テスト
 
@@ -151,7 +151,7 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 - `cmd/codegen`: メインエントリーポイント、CLIコマンド定義
 - `internal/parser`: C++ソースコード解析
 - `internal/generator`: コード生成ロジック
-- `internal/template`: テンプレート管理
+- `internal/generator/templates`: テンプレートファイル
 - `internal/model`: 内部データ構造
 
 ### データフロー
@@ -205,7 +205,7 @@ echo "class Foo {};" | tree-sitter parse --language cpp
 
 ## テンプレートのカスタマイズ
 
-テンプレートは `internal/template/templates/` に配置されています。
+テンプレートは `internal/generator/templates/` に配置されています。
 
 ### テンプレート変数
 
@@ -216,8 +216,8 @@ echo "class Foo {};" | tree-sitter parse --language cpp
 
 ### 新しいテンプレートの追加
 
-1. `internal/template/templates/` に `.tmpl` ファイルを追加
-2. `internal/template/template.go` に新しいレンダリングメソッドを追加
+1. `internal/generator/templates/` に `.tmpl` ファイルを追加
+2. `internal/generator/generator.go` に新しいレンダリングメソッドを追加
 3. `go:embed` ディレクティブにより自動的にバイナリに埋め込まれます
 
 ## デバッグ
@@ -225,13 +225,13 @@ echo "class Foo {};" | tree-sitter parse --language cpp
 ### パーサーのデバッグ
 
 ```bash
-./codegen parse -i testdata/sample_interface.hpp -v
+./omusubi-codegen parse --repo testdata --verbose
 ```
 
 ### 生成されたコードの確認
 
 ```bash
-./codegen generate -i testdata/sample_interface.hpp -o /tmp/output
+./omusubi-codegen generate --repo testdata --output /tmp/output
 ls -la /tmp/output
 ```
 

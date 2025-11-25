@@ -2,17 +2,17 @@
 
 ## 基本的なワークフロー
 
-### 1. pre-omusubiリポジトリをクローン
+### 1. omusubiリポジトリをクローン
 
 ```bash
 cd ~/projects
-git clone https://github.com/TakumiOkayasu/pre-omusubi
+git clone https://github.com/TakumiOkayasu/omusubi
 ```
 
 ### 2. devcontainerでcodegen環境をセットアップ
 
 ```bash
-cd platform_builder
+cd omusubi-codegen
 code .  # VSCodeで開く
 # "Reopen in Container"を選択
 ```
@@ -26,22 +26,22 @@ make build
 ### 4. リポジトリ内の抽象クラスを確認
 
 ```bash
-./omusubi-codegen parse --repo ~/projects/pre-omusubi
+./omusubi-codegen parse --repo ~/projects/omusubi/include
 ```
 
 出力例:
 ```
-Parsing repository: /home/user/projects/pre-omusubi
+Parsing repository: /home/user/projects/omusubi/include
 
 Found 3 file(s) with abstract classes:
 
-File: /home/user/projects/pre-omusubi/include/device/idevice.hpp
+File: /home/user/projects/omusubi/include/device/idevice.hpp
 Namespace: omusubi
 
   Class: IDevice
   Pure virtual methods: 4
 
-File: /home/user/projects/pre-omusubi/include/hal/igpio.hpp
+File: /home/user/projects/omusubi/include/hal/igpio.hpp
 Namespace: omusubi::hal
 
   Class: IGpio
@@ -51,12 +51,12 @@ Namespace: omusubi::hal
 
 詳細表示:
 ```bash
-./omusubi-codegen parse --repo ~/projects/pre-omusubi --verbose
+./omusubi-codegen parse --repo ~/projects/omusubi/include --verbose
 ```
 
 出力例(詳細):
 ```
-File: /home/user/projects/pre-omusubi/include/device/idevice.hpp
+File: /home/user/projects/omusubi/include/device/idevice.hpp
 Namespace: omusubi
 
   Class: IDevice
@@ -71,7 +71,7 @@ Namespace: omusubi
 ### 5. 対話式で実装コードを生成
 
 ```bash
-./omusubi-codegen generate --repo ~/projects/pre-omusubi
+./omusubi-codegen generate --repo ~/projects/omusubi/include
 ```
 
 実行例:
@@ -79,9 +79,9 @@ Namespace: omusubi
 Searching for abstract classes in repository...
 
 Available abstract classes:
-  - IDevice (from /home/user/projects/pre-omusubi/include/device/idevice.hpp)
-  - IGpio (from /home/user/projects/pre-omusubi/include/hal/igpio.hpp)
-  - ITimer (from /home/user/projects/pre-omusubi/include/hal/itimer.hpp)
+  - IDevice (from /home/user/projects/omusubi/include/device/idevice.hpp)
+  - IGpio (from /home/user/projects/omusubi/include/hal/igpio.hpp)
+  - ITimer (from /home/user/projects/omusubi/include/hal/itimer.hpp)
 
 Enter base class name: IDevice
 Searching for abstract class 'IDevice'...
@@ -103,7 +103,7 @@ Generated files in: .
 
 ```bash
 ./omusubi-codegen generate \
-  --repo ~/projects/pre-omusubi \
+  --repo ~/projects/omusubi/include \
   --base IDevice \
   --class MyDevice \
   --output ./my_implementation
@@ -130,12 +130,12 @@ Generated files in: ./my_implementation
 
 ```bash
 # 独自のテンプレートディレクトリを作成
-cp -r internal/template/templates my_templates
+cp -r internal/generator/templates my_templates
 # my_templates/*.tmpl を編集
 
 # カスタムテンプレートで生成
 ./omusubi-codegen generate \
-  --repo ~/projects/pre-omusubi \
+  --repo ~/projects/omusubi/include \
   --base IDevice \
   --class MyDevice \
   --templates ./my_templates
@@ -145,7 +145,7 @@ cp -r internal/template/templates my_templates
 
 ```bash
 #!/bin/bash
-REPO_PATH=~/projects/pre-omusubi
+REPO_PATH=~/projects/omusubi/include
 OUTPUT_DIR=./generated
 
 CLASSES=(
@@ -174,7 +174,7 @@ echo "All classes generated in $OUTPUT_DIR"
 
 ```bash
 # 正確なクラス名を確認
-./omusubi-codegen parse --repo ~/projects/pre-omusubi --verbose
+./omusubi-codegen parse --repo ~/projects/omusubi/include --verbose
 ```
 
 クラス名は大文字小文字を区別します。また、名前空間は含めません。
@@ -191,7 +191,7 @@ tree-sitter --version
 
 テンプレートファイルがUTF-8であることを確認してください:
 ```bash
-file internal/template/templates/*.tmpl
+file internal/generator/templates/*.tmpl
 ```
 
 ## ヘルプ

@@ -199,7 +199,7 @@ ENTRYPOINT ["codegen"]
 docker build -t codegen:latest .
 
 # 実行
-docker run --rm -v $(pwd):/workspace codegen generate --repo /workspace/pre-omusubi
+docker run --rm -v $(pwd):/workspace codegen generate --repo /workspace/omusubi/include
 ```
 
 ## 推奨フロー
@@ -207,7 +207,7 @@ docker run --rm -v $(pwd):/workspace codegen generate --repo /workspace/pre-omus
 ### 開発中
 ```bash
 make build
-./codegen --help
+./omusubi-codegen --help
 ```
 
 ### テスト配布

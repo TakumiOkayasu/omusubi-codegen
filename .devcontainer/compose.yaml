@@ -9,8 +9,8 @@ services:
         USERNAME: ${USER}
         USER_UID: ${UID:-1000}
         USER_GID: ${GID:-1000}
-    container_name: ${PROJECT_NAME:-platform-builder}-devcontainer
-    hostname: ${PROJECT_NAME:-platform-builder}-dev
+    container_name: ${PROJECT_NAME:-omusubi-codegen}-devcontainer
+    hostname: ${PROJECT_NAME:-omusubi-codegen}-dev
     volumes:
       # Workspace mount
       - type: bind
@@ -49,7 +49,7 @@ services:
     command: sleep infinity
     environment:
       USER: ${USER}
-      PROJECT_NAME: ${PROJECT_NAME:-platform-builder}
+      PROJECT_NAME: ${PROJECT_NAME:-omusubi-codegen}
     security_opt:
       - seccomp:unconfined
     # Capabilities (add if needed)
@@ -59,11 +59,11 @@ services:
 volumes:
   # Project-specific volumes (compose project name will be prefixed automatically)
   go-modules:
-    name: ${PROJECT_NAME:-platform-builder}-go-modules
+    name: ${PROJECT_NAME:-omusubi-codegen}-go-modules
   vscode-extensions:
-    name: ${PROJECT_NAME:-platform-builder}-vscode-extensions
+    name: ${PROJECT_NAME:-omusubi-codegen}-vscode-extensions
 
 networks:
   devnetwork:
-    name: ${PROJECT_NAME:-platform-builder}-network
+    name: ${PROJECT_NAME:-omusubi-codegen}-network
     driver: bridge

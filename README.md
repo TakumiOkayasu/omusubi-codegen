@@ -142,7 +142,7 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 
 ```bash
 ./omusubi-codegen generate \
-  --repo /path/to/pre-omusubi \
+  --repo /path/to/omusubi/include \
   --base AbstractClassName \
   --class MyImplementation \
   --output ./output
@@ -151,14 +151,14 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 ### オプション
 
 #### generateコマンド
-- `-r, --repo`: pre-omusubiリポジトリのパス (必須)
+- `-r, --repo`: omusubiリポジトリのパス (省略時は自動検出)
 - `-b, --base`: 基底クラス名 (省略時は対話式で入力)
 - `-c, --class`: 派生クラス名 (省略時は対話式で入力)
 - `-o, --output`: 出力ディレクトリ (デフォルト: カレントディレクトリ)
-- `-t, --templates`: テンプレートディレクトリ (デフォルト: internal/template/templates)
+- `-t, --templates`: テンプレートディレクトリ (デフォルト: internal/generator/templates)
 
 #### parseコマンド
-- `-r, --repo`: pre-omusubiリポジトリのパス (必須)
+- `-r, --repo`: omusubiリポジトリのパス (必須)
 - `-v, --verbose`: 詳細なメソッド情報を表示
 
 ## 開発環境
@@ -190,7 +190,7 @@ cp .env.example .env
 go mod download
 
 # ビルド
-go build -o codegen ./cmd/codegen
+go build -o omusubi-codegen ./cmd/codegen
 
 # テスト実行
 go test ./...
@@ -208,7 +208,6 @@ omusubi-platform-codegen/
 ├── internal/
 │   ├── parser/             # tree-sitterベースのC++パーサー
 │   ├── generator/          # コード生成エンジン
-│   ├── template/           # テンプレート管理
 │   │   └── templates/      # 埋め込みテンプレートファイル
 │   └── model/              # 内部データモデル
 ├── testdata/               # テスト用データ
@@ -217,7 +216,7 @@ omusubi-platform-codegen/
 
 ## 生成されるファイル
 
-入力: pre-omusubi内の抽象クラス (例: `IDevice`)
+入力: omusubi内の抽象クラス (例: `IDevice`)
 
 生成されるファイル:
 - `my_device.hpp` - 派生クラスのヘッダーファイル
@@ -270,4 +269,5 @@ MIT License
 
 ## 関連プロジェクト
 
-- [pre-omusubi](https://github.com/TakumiOkayasu/pre-omusubi) - Omusubi組み込みフレームワーク本体
+- [omusubi](https://github.com/TakumiOkayasu/omusubi) - Omusubi組み込みフレームワーク本体
+- [pre-omusubi](https://github.com/TakumiOkayasu/pre-omusubi) - アルファ版（`--legacy-name` フラグで対応）

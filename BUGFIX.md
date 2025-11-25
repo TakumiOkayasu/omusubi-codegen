@@ -82,8 +82,8 @@ func (p *Parser) ParseSource(source []byte) (*model.FileInfo, error) {
 make build
 
 # 修正されたバイナリでテスト
-./omusubi-codegen parse --repo /path/to/pre-omusubi --verbose
-./omusubi-codegen generate --repo /path/to/pre-omusubi
+./omusubi-codegen parse --repo /path/to/omusubi/include --verbose
+./omusubi-codegen generate --repo /path/to/omusubi/include
 ```
 
 ## 今後の推奨事項
