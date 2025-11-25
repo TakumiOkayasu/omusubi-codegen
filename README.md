@@ -64,6 +64,7 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 ```
 
 **アルファ版 (pre-omusubi) の場合:**
+
 ```bash
 # pre-omusubi/ と pre-omusubi-m5stack/ を自動検出
 ./omusubi-codegen generate --legacy-name --project --project-name my-m5stack-project
@@ -71,7 +72,8 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 
 > **Note**: `--legacy-name` フラグは、正式リリース後に削除される予定です。
 
-これにより以下が生成されます:
+これにより以下が生成されます：
+
 - `my-m5stack-project/platformio.ini` (相対パスでライブラリを参照)
 - `my-m5stack-project/src/main.cpp` (基本的なArduinoセットアップ)
 - `my-m5stack-project/include/omusubi/platform/<device_name>/*.hpp` (ヘッダーファイル)
@@ -85,6 +87,7 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 ```
 
 詳細表示:
+
 ```bash
 ./omusubi-codegen parse --repo /path/to/omusubi/include --verbose
 ```
@@ -92,16 +95,19 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 ### 2. 実装コードのみを生成 (プロジェクト構造なし)
 
 基本的な使い方(対話式・複数選択):
+
 ```bash
 ./omusubi-codegen generate --repo /path/to/omusubi/include
 ```
 
 ワークスペースの自動検出を使用:
+
 ```bash
 ./omusubi-codegen generate  # カレントディレクトリから omusubi/ を自動検出
 ```
 
-このコマンドを実行すると:
+このコマンドを実行すると：
+
 1. リポジトリ内の抽象クラスが検索されます
 2. **「全て選択しますか？」の選択肢が表示されます**
    - `Yes - Select all classes`: 全てのクラスを選択
@@ -114,23 +120,28 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 5. 選択した各クラスに対して、`<プレフィックス><BaseClassName>`の形式で.hppと.cppが生成されます
 
 #### 表示例
-```
+
+```text
 ? Found 3 abstract classes. Select all?
 > No - Choose individually
   Yes - Select all classes
 ```
+
 個別選択を選んだ場合:
-```
+
+```text
 ? Select abstract classes to implement:
   [x] omusubi::IDevice (from testdata/sample/idevice.hpp)
   [x] omusubi::ISensor (from testdata/sample/isensor.hpp)
 > [ ] omusubi::IActuator (from testdata/sample/iactuator.hpp)
 ```
+
 - `[x]`: 選択済み（緑色で表示）
 - `[ ]`: 未選択
 - `>`: 現在のカーソル位置
 
 例: プレフィックスに "Custom" を指定し、IDevice と ISensor を選択した場合
+
 - `custom_idevice.hpp` / `custom_idevice.cpp`
 - `custom_isensor.hpp` / `custom_isensor.cpp`
 
@@ -149,6 +160,7 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 ### オプション
 
 #### generateコマンド
+
 - `-r, --repo`: omusubiリポジトリのパス (省略時は自動検出)
 - `-b, --base`: 基底クラス名 (省略時は対話式で入力)
 - `-c, --class`: 派生クラス名 (省略時は対話式で入力)
@@ -156,6 +168,7 @@ cd /path/to/workspace  # omusubi/ と omusubi-m5stack/ があるディレクト�
 - `-t, --templates`: テンプレートディレクトリ (デフォルト: 埋め込みテンプレート使用)
 
 #### parseコマンド
+
 - `-r, --repo`: omusubiリポジトリのパス (必須)
 - `-v, --verbose`: 詳細なメソッド情報を表示
 
@@ -195,7 +208,7 @@ go test ./...
 
 ## プロジェクト構造
 
-```
+```text
 omusubi-codegen/
 ├── .devcontainer/          # Dev Container設定
 │   ├── devcontainer.json
@@ -215,11 +228,13 @@ omusubi-codegen/
 
 入力: omusubi内の抽象クラス (例: `IDevice`)
 
-生成されるファイル:
+生成されるファイル：
+
 - `my_device.hpp` - 派生クラスのヘッダーファイル
 - `my_device.cpp` - 実装スケルトン (関数本体は空、TODOコメント付き)
 
-**注意**:
+**注意**：
+
 - ファイル名は自動的にスネークケース (`snake_case`) に変換されます
 - インクルードガードは `#pragma once` を使用します（モダンC++標準）
 - 元のヘッダーファイルが `.h` の場合、生成されるファイルは `.h` と `.cpp` になります
@@ -228,6 +243,7 @@ omusubi-codegen/
 ### 生成例
 
 #### my_device.hpp
+
 ```cpp
 #pragma once
 
@@ -248,6 +264,7 @@ public:
 ```
 
 #### my_device.cpp
+
 ```cpp
 #include "my_device.hpp"
 

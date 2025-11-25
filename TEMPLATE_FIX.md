@@ -4,7 +4,7 @@
 
 CIでビルドされたバイナリでは、テンプレートファイルが外部ファイルとして存在しないため、以下のエラーが発生します：
 
-```
+```text
 failed to parse template internal/generator/templates/class_header.tmpl:
 open internal/generator/templates/class_header.tmpl: no such file or directory
 ```
@@ -15,9 +15,9 @@ open internal/generator/templates/class_header.tmpl: no such file or directory
 
 ```go
 func (g *Generator) loadTemplate(name string) (*template.Template, error) {
-	tmplPath := filepath.Join(g.templateDir, name)
-	tmpl, err := template.New(name).Funcs(funcMap).ParseFiles(tmplPath)
-	// ...
+    tmplPath := filepath.Join(g.templateDir, name)
+    tmpl, err := template.New(name).Funcs(funcMap).ParseFiles(tmplPath)
+    // ...
 }
 ```
 
@@ -35,7 +35,7 @@ Go 1.16+ の `embed` パッケージを使用してテンプレートをバイ�
 package generator
 
 import (
-	"embed"
+    "embed"
 )
 
 //go:embed templates/*.tmpl
@@ -45,51 +45,53 @@ var templatesFS embed.FS
 ### ステップ3: `internal/generator/generator.go` を修正
 
 **修正前:**
+
 ```go
 func (g *Generator) loadTemplate(name string) (*template.Template, error) {
-	tmplPath := filepath.Join(g.templateDir, name)
+    tmplPath := filepath.Join(g.templateDir, name)
 
-	funcMap := template.FuncMap{
-		"formatParameters":      formatParameters,
-		"formatMethodSignature": formatMethodSignature,
-		"toLower":              strings.ToLower,
-		"toUpper":              strings.ToUpper,
-		"toSnakeCase":          toSnakeCase,
-	}
+    funcMap := template.FuncMap{
+        "formatParameters":      formatParameters,
+        "formatMethodSignature": formatMethodSignature,
+        "toLower":              strings.ToLower,
+        "toUpper":              strings.ToUpper,
+        "toSnakeCase":          toSnakeCase,
+    }
 
-	tmpl, err := template.New(name).Funcs(funcMap).ParseFiles(tmplPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse template %s: %w", tmplPath, err)
-	}
+    tmpl, err := template.New(name).Funcs(funcMap).ParseFiles(tmplPath)
+    if err != nil {
+        return nil, fmt.Errorf("failed to parse template %s: %w", tmplPath, err)
+    }
 
-	return tmpl, nil
+    return tmpl, nil
 }
 ```
 
 **修正後:**
+
 ```go
 func (g *Generator) loadTemplate(name string) (*template.Template, error) {
-	funcMap := template.FuncMap{
-		"formatParameters":      formatParameters,
-		"formatMethodSignature": formatMethodSignature,
-		"toLower":              strings.ToLower,
-		"toUpper":              strings.ToUpper,
-		"toSnakeCase":          toSnakeCase,
-	}
+    funcMap := template.FuncMap{
+        "formatParameters":      formatParameters,
+        "formatMethodSignature": formatMethodSignature,
+        "toLower":              strings.ToLower,
+        "toUpper":              strings.ToUpper,
+        "toSnakeCase":          toSnakeCase,
+    }
 
-	// 埋め込みファイルシステムからテンプレートを読み込む
-	tmplPath := "templates/" + name
-	tmplContent, err := templatesFS.ReadFile(tmplPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read embedded template %s: %w", name, err)
-	}
+    // 埋め込みファイルシステムからテンプレートを読み込む
+    tmplPath := "templates/" + name
+    tmplContent, err := templatesFS.ReadFile(tmplPath)
+    if err != nil {
+        return nil, fmt.Errorf("failed to read embedded template %s: %w", name, err)
+    }
 
-	tmpl, err := template.New(name).Funcs(funcMap).Parse(string(tmplContent))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse template %s: %w", name, err)
-	}
+    tmpl, err := template.New(name).Funcs(funcMap).Parse(string(tmplContent))
+    if err != nil {
+        return nil, fmt.Errorf("failed to parse template %s: %w", name, err)
+    }
 
-	return tmpl, nil
+    return tmpl, nil
 }
 ```
 
@@ -106,32 +108,32 @@ make build
 
 ```go
 func (g *Generator) loadTemplate(name string) (*template.Template, error) {
-	funcMap := template.FuncMap{
-		// ...
-	}
+    funcMap := template.FuncMap{
+        // ...
+    }
 
-	var tmplContent []byte
-	var err error
+    var tmplContent []byte
+    var err error
 
-	// まず埋め込みファイルシステムから試す
-	tmplPath := "templates/" + name
-	tmplContent, err = templatesFS.ReadFile(tmplPath)
+    // まず埋め込みファイルシステムから試す
+    tmplPath := "templates/" + name
+    tmplContent, err = templatesFS.ReadFile(tmplPath)
 
-	// 埋め込みから読めない場合、ファイルシステムから読む（開発時）
-	if err != nil {
-		fsPath := filepath.Join(g.templateDir, name)
-		tmplContent, err = os.ReadFile(fsPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read template %s: %w", name, err)
-		}
-	}
+    // 埋め込みから読めない場合、ファイルシステムから読む（開発時）
+    if err != nil {
+        fsPath := filepath.Join(g.templateDir, name)
+        tmplContent, err = os.ReadFile(fsPath)
+        if err != nil {
+            return nil, fmt.Errorf("failed to read template %s: %w", name, err)
+        }
+    }
 
-	tmpl, err := template.New(name).Funcs(funcMap).Parse(string(tmplContent))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse template %s: %w", name, err)
-	}
+    tmpl, err := template.New(name).Funcs(funcMap).Parse(string(tmplContent))
+    if err != nil {
+        return nil, fmt.Errorf("failed to parse template %s: %w", name, err)
+    }
 
-	return tmpl, nil
+    return tmpl, nil
 }
 ```
 

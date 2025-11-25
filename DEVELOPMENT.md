@@ -155,7 +155,7 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 ### データフロー
 
-```
+```text
 C++ Header File (.hpp/.h)
     ↓
 Parser (tree-sitter)

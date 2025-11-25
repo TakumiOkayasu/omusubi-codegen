@@ -12,6 +12,7 @@ When working in this repository, Claude should communicate in Japanese for all e
 This is **omusubi-codegen**, a code generation tool for the Omusubi embedded framework. It parses C++ abstract base classes (interfaces) using tree-sitter and generates implementation skeletons (.hpp/.cpp files) with empty method bodies ready for manual implementation.
 
 **Key technologies:**
+
 - Go 1.23+ with CGO (required for tree-sitter)
 - tree-sitter C++ parser for AST analysis
 - Cobra CLI framework
@@ -21,6 +22,7 @@ This is **omusubi-codegen**, a code generation tool for the Omusubi embedded fra
 ## Common Commands
 
 ### Building
+
 ```bash
 # Build the binary (creates ./omusubi-codegen)
 make build
@@ -33,6 +35,7 @@ make deps
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 make test
@@ -42,6 +45,7 @@ make test-coverage
 ```
 
 ### Code Quality
+
 ```bash
 # Format code
 make fmt
@@ -53,6 +57,7 @@ make lint
 ### Running the Tool
 
 #### Basic Usage (Implementation Generation Only)
+
 ```bash
 # Parse a repository and list abstract classes
 ./omusubi-codegen parse --repo /path/to/omusubi/include
@@ -70,10 +75,12 @@ make lint
 ```
 
 #### Multi-Repository Workspace Usage (Recommended)
+
 The tool automatically detects the omusubi workspace structure when run from a project directory:
 
 **Workspace Structure:**
-```
+
+```text
 workspace/
 ├── omusubi/                  # Core library
 │   ├── include/omusubi/
@@ -96,6 +103,7 @@ workspace/
 ```
 
 **Auto-detection Example:**
+
 ```bash
 # From workspace directory - auto-detects omusubi/ and omusubi-m5stack/
 ./omusubi-codegen generate --project --project-name my-m5stack-project
@@ -118,6 +126,7 @@ workspace/
 ```
 
 **What Gets Generated:**
+
 - `--project` flag creates:
   - `platformio.ini` with correct relative paths to libraries
   - `src/main.cpp` with basic Arduino setup
@@ -128,6 +137,7 @@ workspace/
   - Both header and implementation files in specified output directory
 
 ### Development Container
+
 ```bash
 # Build devcontainer (uses PROJECT_NAME from .env)
 make devcontainer-build
@@ -143,7 +153,8 @@ docker exec -it ${PROJECT_NAME}-devcontainer /bin/bash
 ## Architecture
 
 ### Core Data Flow
-```
+
+```text
 C++ Header Files (.hpp/.h)
     ↓
 Parser (tree-sitter) → AST traversal
@@ -158,6 +169,7 @@ Generated Files (.hpp/.h + .cpp)
 ### Package Structure
 
 **cmd/codegen/main.go**
+
 - CLI entry point using Cobra framework
 - Two main commands: `parse` and `generate`
 - Interactive user prompts with survey/v2 (multi-select for class selection)
@@ -166,6 +178,7 @@ Generated Files (.hpp/.h + .cpp)
 - **NEW:** PlatformIO project generation with `--project` flag
 
 **internal/parser/**
+
 - `Parser` wraps tree-sitter C++ parser
 - `ParseDirectory()`: Recursively walks directories for .hpp/.h files
 - `ParseFile()`: Parses individual files, detects file extension (.h vs .hpp)
@@ -175,6 +188,7 @@ Generated Files (.hpp/.h + .cpp)
 - **NEW:** `DetectWorkspace()`: Automatically finds omusubi core and platform libraries in parent directories
 
 **internal/generator/**
+
 - `Generator`: Manages template rendering and file output
 - `GenerateImplementation()`: Creates both header and source files
 - Template functions: `formatParameters`, `formatMethodSignature`, `toSnakeCase`
@@ -184,12 +198,14 @@ Generated Files (.hpp/.h + .cpp)
 - **NEW:** Generates `platformio.ini`, `main.cpp`, and `.gitignore`
 
 **internal/model/**
+
 - Data structures: `ClassInfo`, `MethodInfo`, `ParameterInfo`, `FieldInfo`, `FileInfo`
 - `AccessLevel` enum: Public, Protected, Private
 - `SourceFileExt` field tracks original file extension for correct generation
 - **NEW:** `ProjectConfig`: Holds PlatformIO project configuration with relative library paths
 
 **internal/generator/templates/**
+
 - `class_header.tmpl`: Generates .hpp/.h with class declaration, override methods
 - `class_source.tmpl`: Generates .cpp with empty method implementations
 - `platformio.ini.tmpl`: Generates PlatformIO configuration with library paths
@@ -201,6 +217,7 @@ Generated Files (.hpp/.h + .cpp)
 ### Important Implementation Details
 
 **tree-sitter AST Nodes:**
+
 - `namespace_definition`: C++ namespace blocks
 - `class_specifier`: Class definitions
 - `function_definition`/`declaration`: Method declarations
@@ -208,11 +225,13 @@ Generated Files (.hpp/.h + .cpp)
 - `access_specifier`: public/protected/private sections
 
 **Pure Virtual Detection:**
+
 - Parser searches for `= 0` in method declaration text
 - Only classes with at least one pure virtual method are considered "abstract"
 - Only pure virtual methods are included in generated implementations
 
 **File Extension Logic:**
+
 - Original file extension (.h or .hpp) is stored in `ClassInfo.SourceFileExt`
 - Generated header files match the original convention (.h or .hpp)
 - Generated source files are always `.cpp` (C++ only)
@@ -221,6 +240,7 @@ Generated Files (.hpp/.h + .cpp)
 - Include statements in generated files use the correct header extension
 
 **Interactive CLI Flow:**
+
 1. User runs `generate` command with `--repo`
 2. Parser scans repository for abstract classes
 3. If classes found: "Select all?" prompt (Yes/No)
@@ -231,16 +251,19 @@ Generated Files (.hpp/.h + .cpp)
 ## Dev Container Notes
 
 **Environment Variables (`.env` file):**
+
 - `PROJECT_NAME`: Prefix for container/volume/network names (prevents conflicts)
 - `USER`, `UID`, `GID`: Host user mapping (important for file permissions)
 - On macOS, UID/GID may need manual configuration
 
 **Resource Naming:**
+
 - Containers: `${PROJECT_NAME}-devcontainer`
 - Volumes: `${PROJECT_NAME}-go-modules`, `${PROJECT_NAME}-vscode-extensions`
 - Networks: `${PROJECT_NAME}-network`
 
 **CGO Requirement:**
+
 - tree-sitter requires CGO, so `CGO_ENABLED=1` is mandatory
 - Cross-compilation is complex; build on target platform when possible
 
@@ -275,6 +298,7 @@ Test data is in `testdata/` directory.
 Templates are in `internal/generator/templates/` and use Go's `text/template`:
 
 **Available template variables:**
+
 - `.ClassName`: Derived class name
 - `.BaseClass`: Base class name
 - `.BaseClassExt`: File extension (h/hpp)
@@ -283,12 +307,14 @@ Templates are in `internal/generator/templates/` and use Go's `text/template`:
 - `.HasNamespace`: Boolean
 
 **Template functions:**
+
 - `formatParameters`: Formats parameter list
 - `formatMethodSignature`: Builds complete method signature with override
 - `toSnakeCase`: Converts PascalCase to snake_case
 - `toLower`, `toUpper`: String case conversion
 
 **To modify templates:**
+
 1. Edit files in `internal/generator/templates/`
 2. Templates are embedded via `go:embed`, so rebuild is required: `make clean && make build`
 
@@ -304,6 +330,7 @@ Templates are in `internal/generator/templates/` and use Go's `text/template`:
 ## Binary Name
 
 The binary is named `omusubi-codegen` (not `codegen`) to avoid conflicts with other tools. The build process uses:
+
 - Makefile variable: `BINARY_NAME=omusubi-codegen`
 - Install path via `go install` creates `codegen` in `$GOPATH/bin`
 - Symbolic link can be created if needed: `ln -s $GOPATH/bin/codegen $GOPATH/bin/omusubi-codegen`

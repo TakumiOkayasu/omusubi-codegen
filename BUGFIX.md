@@ -4,7 +4,7 @@
 
 CIでビルドされたバイナリを実行すると、以下のエラーが発生していました：
 
-```
+```text
 panic: runtime error: invalid memory address or nil pointer dereference
 [signal SIGSEGV: segmentation violation code=0x2 addr=0x20 pc=0x100aba22c]
 ```
@@ -37,6 +37,7 @@ import (
 ### 2. ParseSourceメソッドの修正
 
 **修正前:**
+
 ```go
 func (p *Parser) ParseSource(source []byte) (*model.FileInfo, error) {
     tree := p.parser.Parse(nil, source)  // ❌ nilを渡していた
@@ -49,6 +50,7 @@ func (p *Parser) ParseSource(source []byte) (*model.FileInfo, error) {
 ```
 
 **修正後:**
+
 ```go
 func (p *Parser) ParseSource(source []byte) (*model.FileInfo, error) {
     ctx := context.Background()  // ✅ 有効なcontextを作成
@@ -99,5 +101,5 @@ make build
 
 ## 参考
 
-- tree-sitter Go bindings: https://github.com/smacker/go-tree-sitter
-- Go context package: https://pkg.go.dev/context
+- tree-sitter Go bindings: <https://github.com/smacker/go-tree-sitter>
+- Go context package: <https://pkg.go.dev/context>

@@ -14,7 +14,8 @@ cd /path/to/workspace
 ./omusubi-codegen generate --project --project-name my-m5stack-project
 ```
 
-生成されるファイル:
+生成されるファイル：
+
 - `my-m5stack-project/platformio.ini`
 - `my-m5stack-project/src/main.cpp`
 - `my-m5stack-project/include/omusubi/platform/<device_name>/*.hpp`
@@ -50,8 +51,9 @@ make build
 ./omusubi-codegen parse --repo ~/projects/omusubi/include
 ```
 
-出力例:
-```
+出力例：
+
+```text
 Parsing repository: /home/user/projects/omusubi/include
 
 Found 3 file(s) with abstract classes:
@@ -70,13 +72,15 @@ Namespace: omusubi::hal
 ...
 ```
 
-詳細表示:
+詳細表示：
+
 ```bash
 ./omusubi-codegen parse --repo ~/projects/omusubi/include --verbose
 ```
 
-出力例(詳細):
-```
+出力例(詳細)：
+
+```text
 File: /home/user/projects/omusubi/include/device/idevice.hpp
 Namespace: omusubi
 
@@ -95,8 +99,9 @@ Namespace: omusubi
 ./omusubi-codegen generate --repo ~/projects/omusubi/include
 ```
 
-実行例:
-```
+実行例：
+
+```text
 Searching for abstract classes in repository...
 
 ? Found 3 abstract classes. Select all?
@@ -104,20 +109,22 @@ Searching for abstract classes in repository...
   Yes - Select all classes
 ```
 
-個別選択を選んだ場合:
-```
+個別選択を選んだ場合：
+
+```text
 ? Select abstract classes to implement:
   [x] omusubi::IDevice (from device/idevice.hpp)
   [x] omusubi::IGpio (from hal/igpio.hpp)
 > [ ] omusubi::ITimer (from hal/itimer.hpp)
 ```
 
-操作方法:
+操作方法：
+
 - `↑`/`↓`: カーソル移動
 - `Space`: 選択/解除
 - `Enter`: 確定
 
-```
+```text
 ? Enter class name prefix (default: My): Custom
 
 Generating files...
@@ -142,8 +149,9 @@ Generated files in: .
   --output ./my_implementation
 ```
 
-出力:
-```
+出力：
+
+```text
 Searching for abstract class 'IDevice'...
 Found abstract class: IDevice
 Namespace: omusubi
@@ -246,7 +254,8 @@ echo "All classes generated in $OUTPUT_DIR"
 
 ### エラー: failed to parse repository
 
-tree-sitter-cppが正しくインストールされているか確認:
+tree-sitter-cppが正しくインストールされているか確認：
+
 ```bash
 # devcontainer内で
 tree-sitter --version
@@ -254,7 +263,8 @@ tree-sitter --version
 
 ### 生成されたファイルのエンコーディングがおかしい
 
-テンプレートファイルがUTF-8であることを確認してください:
+テンプレートファイルがUTF-8であることを確認してください：
+
 ```bash
 file internal/generator/templates/*.tmpl
 ```

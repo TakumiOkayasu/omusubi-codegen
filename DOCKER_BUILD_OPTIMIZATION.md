@@ -7,6 +7,7 @@
 ### 1. **BuildKit Cache Mounts** (最も効果的)
 
 #### apt パッケージキャッシュ
+
 ```dockerfile
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -14,27 +15,32 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ```
 
 **効果:**
+
 - 初回: 通常通りダウンロード
 - 2回目以降: パッケージダウンロードをスキップ
 - **時間短縮: 50-70%**
 
 #### Go モジュールキャッシュ
+
 ```dockerfile
 RUN --mount=type=cache,target=/go/pkg/mod \
     go install ...
 ```
 
 **効果:**
+
 - Go依存関係のダウンロードを再利用
 - **時間短縮: 80-90%**
 
 #### npm キャッシュ
+
 ```dockerfile
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g ...
 ```
 
 **効果:**
+
 - npmパッケージダウンロードをスキップ
 - **時間短縮: 70-80%**
 
@@ -46,6 +52,7 @@ export COMPOSE_DOCKER_CLI_BUILD=1
 ```
 
 **効果:**
+
 - 並列ビルドステージ実行
 - より効率的なレイヤーキャッシング
 - **時間短縮: 20-30%**
@@ -53,6 +60,7 @@ export COMPOSE_DOCKER_CLI_BUILD=1
 ### 3. **レイヤー最適化**
 
 #### RUN命令の統合
+
 ```dockerfile
 # ❌ Before (3 layers)
 RUN apt-get update
@@ -66,6 +74,7 @@ RUN apt-get update && apt-get install -y \
 ```
 
 **効果:**
+
 - レイヤー数削減
 - イメージサイズ削減
 - **時間短縮: 10-15%**
@@ -79,13 +88,14 @@ RUN GOARCH=${TARGETARCH:-amd64} && \
 ```
 
 **効果:**
+
 - ARM64/AMD64で適切なバイナリを自動選択
 - クロスコンパイル不要
 - **時間短縮: 30-40% (ARM Mac)**
 
 ### 5. **.dockerignore**
 
-```
+```text
 .git/
 *.md
 .vscode/
@@ -93,6 +103,7 @@ node_modules/
 ```
 
 **効果:**
+
 - ビルドコンテキストサイズ削減
 - ファイル転送時間短縮
 - **時間短縮: 5-10%**
@@ -105,6 +116,7 @@ export COMPOSE_DOCKER_CLI_BUILD=1
 ```
 
 **効果:**
+
 - BuildKitの高速ビルド機能を使用
 - キャッシュマウントが有効化
 - **時間短縮: 全体で20-30%**
@@ -115,6 +127,7 @@ Docker Desktop (デフォルトのdockerドライバー)では、`cache_from`/`c
 代わりに、Dockerfileの`--mount=type=cache`を使用してキャッシュを実現しています。
 
 より高度なキャッシュが必要な場合は、docker-container buildxドライバーを使用してください:
+
 ```bash
 docker buildx create --use --name mybuilder
 docker buildx build --cache-from=type=local,src=/tmp/cache --cache-to=type=local,dest=/tmp/cache .
@@ -123,6 +136,7 @@ docker buildx build --cache-from=type=local,src=/tmp/cache --cache-to=type=local
 ## 📊 パフォーマンス比較
 
 ### 初回ビルド
+
 | 手法 | 時間 |
 |------|------|
 | 最適化前 | ~8-10分 |
@@ -130,6 +144,7 @@ docker buildx build --cache-from=type=local,src=/tmp/cache --cache-to=type=local
 | **改善率** | **20-25%** |
 
 ### 2回目以降ビルド (キャッシュ有効)
+
 | 手法 | 時間 |
 |------|------|
 | 最適化前 | ~5-7分 |
@@ -137,6 +152,7 @@ docker buildx build --cache-from=type=local,src=/tmp/cache --cache-to=type=local
 | **改善率** | **70-80%** |
 
 ### 部分的な変更時
+
 | 変更箇所 | 時間 |
 |---------|------|
 | Dockerfile末尾のみ | ~30秒 |
@@ -171,6 +187,7 @@ docker builder prune
 ## 💡 ベストプラクティス
 
 ### DO ✅
+
 1. **BuildKitを常に有効化する**
 2. **キャッシュマウントを活用する**
 3. **頻繁に変更される行を後ろに配置する**
@@ -178,6 +195,7 @@ docker builder prune
 5. **.dockerignoreを維持する**
 
 ### DON'T ❌
+
 1. **`--no-cache`を常用しない** (必要時のみ)
 2. **不要なファイルをコンテキストに含めない**
 3. **毎回全レイヤーを再ビルドしない**
@@ -188,16 +206,19 @@ docker builder prune
 ### ビルドが遅い場合
 
 1. **BuildKit確認**
+
    ```bash
    docker buildx version
    ```
 
 2. **キャッシュ状態確認**
+
    ```bash
    docker system df
    ```
 
 3. **キャッシュマウント確認**
+
    ```bash
    ls -lh /tmp/buildkit-cache
    ```
@@ -211,6 +232,7 @@ docker builder prune
    - `USERNAME`, `USER_UID`, `USER_GID`が変わるとキャッシュが無効化されます
 
 3. **BuildKitキャッシュリセット**
+
    ```bash
    docker builder prune -af
    rm -rf /tmp/buildkit-cache

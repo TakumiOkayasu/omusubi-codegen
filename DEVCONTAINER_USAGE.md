@@ -5,17 +5,20 @@
 ### 基本的な使い方
 
 1. **devcontainerを開く**
-   ```
+
+   ```text
    VSCode: Cmd+Shift+P → "Dev Containers: Reopen in Container"
    ```
 
 2. **ビルド**
+
    ```bash
    # devcontainer内のターミナルで
    make build
    ```
 
 3. **実行**
+
    ```bash
    ./omusubi-codegen --help
    ```
@@ -65,12 +68,14 @@ git clone https://github.com/TakumiOkayasu/omusubi ../omusubi
 
 ### 方法3: /workspaceの親ディレクトリを使う
 
-デフォルトでは`/workspace`がマウントされています:
+デフォルトでは`/workspace`がマウントされています：
+
 - ホスト: プロジェクトディレクトリ
 - devcontainer: `/workspace`
 
 omusubiが同じ階層にある場合:
-```
+
+```text
 workspace/
 ├── omusubi-codegen/   (マウント済み)
 └── omusubi/           (アクセスしたい)
@@ -112,7 +117,8 @@ file omusubi-codegen
 # omusubi-codegen: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV)...
 ```
 
-このバイナリは:
+このバイナリは：
+
 - ✅ devcontainer内で実行可能
 - ✅ Linux ARM64環境で実行可能
 - ❌ macOSでは実行不可（exec format error）
@@ -186,7 +192,8 @@ make build
 
 **原因**: Linux用バイナリをmacOSで実行しようとしています
 
-**解決策**:
+**解決策**：
+
 1. devcontainer内で実行する
 2. または、macOSでリビルド: `brew install go && make build`
 
@@ -194,7 +201,8 @@ make build
 
 **原因**: omusubiがマウントされていません
 
-**解決策**:
+**解決策**：
+
 1. `.devcontainer/compose.yaml`にvolumeを追加（上記「方法1」参照）
 2. devcontainerを再起動
 
@@ -202,7 +210,8 @@ make build
 
 **原因**: ファイルの書き込み権限がありません
 
-**解決策**:
+**解決策**：
+
 ```bash
 # devcontainer内で
 chmod +x omusubi-codegen
@@ -218,18 +227,21 @@ chmod +x omusubi-codegen
 **原因**: macOSのGatekeeper機能が未署名のバイナリをブロックしています
 
 **解決策1（推奨）**: 検疫属性を削除
+
 ```bash
 xattr -d com.apple.quarantine ./omusubi-codegen
 ./omusubi-codegen --help  # ✅ 実行可能
 ```
 
 **解決策2**: システム設定から許可
+
 1. バイナリを実行しようとする（エラーが出る）
 2. 「システム設定」→「プライバシーとセキュリティ」を開く
 3. 「このまま許可」ボタンをクリック
 4. 再度実行
 
 **解決策3**: spctlコマンドで許可
+
 ```bash
 spctl --add ./omusubi-codegen
 ```

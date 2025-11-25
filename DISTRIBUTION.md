@@ -13,7 +13,8 @@
 
 ### セットアップ
 
-すでに設定済みです:
+すでに設定済みです：
+
 - `.github/workflows/release.yml`: マトリックスビルドワークフロー
 
 ### リリース手順
@@ -30,7 +31,8 @@ git tag -a v1.0.0 -m "Release version 1.0.0"
 git push origin v1.0.0
 ```
 
-これだけで、以下が自動的に行われます:
+これだけで、以下が自動的に行われます：
+
 - Linux (amd64) をUbuntuランナーでビルド
 - macOS (amd64) をIntel Macランナーでビルド
 - macOS (arm64) をApple Silicon Macランナーでビルド
@@ -41,7 +43,8 @@ git push origin v1.0.0
 
 ### CGOによる制限
 
-tree-sitterはCGOを必要とするため:
+tree-sitterはCGOを必要とするため：
+
 - 各プラットフォームはネイティブランナーでビルド
 - Linux ARM64は含まれません(GitHub Actionsにネイティブランナーがないため)
 - 必要な場合は、ARM64環境で手動ビルドまたはDocker buildxを使用
@@ -65,7 +68,8 @@ tree-sitterはCGOを必要とするため:
 
 **このプロジェクトはtree-sitterを使用しているため、CGOが必須です。**
 
-これにより:
+これにより：
+
 - 通常のGoクロスコンパイル(`GOOS=linux GOARCH=amd64 go build`)は動作しません
 - ホストプラットフォームのみビルド可能です
 - マルチプラットフォームビルドには、GitHub ActionsまたはDocker buildxが必要です
@@ -80,8 +84,9 @@ make release
 ./scripts/build-all.sh
 ```
 
-生成されるファイル例(macOS ARM64の場合):
-```
+生成されるファイル例(macOS ARM64の場合)：
+
+```text
 dist/
 ├── codegen-v1.0.0-darwin-arm64.tar.gz
 └── checksums.txt
@@ -97,8 +102,9 @@ make release-docker
 ./scripts/docker-build-all.sh
 ```
 
-生成されるファイル:
-```
+生成されるファイル：
+
+```text
 dist/
 ├── codegen-v1.0.0-linux-amd64.tar.gz
 ├── codegen-v1.0.0-linux-arm64.tar.gz
@@ -113,6 +119,7 @@ dist/
    - GitHubのReleasesページで手動アップロード
 
 2. **ファイルサーバーで配布**
+
    ```bash
    # dist/をサーバーにアップロード
    scp dist/* user@server:/path/to/downloads/
@@ -141,10 +148,12 @@ go install github.com/TakumiOkayasu/omusubi-codegen/cmd/codegen@v1.0.0
 ### メリット/デメリット
 
 **メリット:**
+
 - 配布作業不要
 - 常に最新版を取得可能
 
 **デメリット:**
+
 - Goのインストールが必要
 - 一般ユーザーには不向き
 
@@ -205,18 +214,21 @@ docker run --rm -v $(pwd):/workspace codegen generate --repo /workspace/omusubi/
 ## 推奨フロー
 
 ### 開発中
+
 ```bash
 make build
 ./omusubi-codegen --help
 ```
 
 ### テスト配布
+
 ```bash
 make release
 # dist/内のファイルを配布
 ```
 
 ### 本番リリース
+
 ```bash
 git tag -a v1.0.0 -m "Release v1.0.0"
 git push origin v1.0.0
