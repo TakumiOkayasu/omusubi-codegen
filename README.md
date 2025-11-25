@@ -23,7 +23,7 @@ C++インターフェース定義から実装スケルトン、テストコー�
 
 ### バイナリダウンロード (推奨)
 
-[GitHub Releases](https://github.com/TakumiOkayasu/omusubi-platform-codegen/releases)から、お使いのOSに合わせたバイナリをダウンロードしてください。
+[GitHub Releases](https://github.com/TakumiOkayasu/omusubi-codegen/releases)から、お使いのOSに合わせたバイナリをダウンロードしてください。
 
 ### go install
 
