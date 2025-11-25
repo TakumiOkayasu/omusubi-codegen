@@ -168,7 +168,7 @@ Generated Files (.hpp/.h + .cpp)
 
 ### Package Structure
 
-**cmd/codegen/main.go**
+#### cmd/codegen/main.go
 
 - CLI entry point using Cobra framework
 - Two main commands: `parse` and `generate`
@@ -177,7 +177,7 @@ Generated Files (.hpp/.h + .cpp)
 - **NEW:** Workspace auto-detection via `parser.DetectWorkspace()`
 - **NEW:** PlatformIO project generation with `--project` flag
 
-**internal/parser/**
+#### internal/parser/
 
 - `Parser` wraps tree-sitter C++ parser
 - `ParseDirectory()`: Recursively walks directories for .hpp/.h files
@@ -187,7 +187,7 @@ Generated Files (.hpp/.h + .cpp)
 - Extracts: access levels (public/protected/private), const/static/virtual modifiers, parameters with default values
 - **NEW:** `DetectWorkspace()`: Automatically finds omusubi core and platform libraries in parent directories
 
-**internal/generator/**
+#### internal/generator/
 
 - `Generator`: Manages template rendering and file output
 - `GenerateImplementation()`: Creates both header and source files
@@ -197,14 +197,14 @@ Generated Files (.hpp/.h + .cpp)
 - **NEW:** `GenerateProject()`: Creates complete PlatformIO project structure
 - **NEW:** Generates `platformio.ini`, `main.cpp`, and `.gitignore`
 
-**internal/model/**
+#### internal/model/
 
 - Data structures: `ClassInfo`, `MethodInfo`, `ParameterInfo`, `FieldInfo`, `FileInfo`
 - `AccessLevel` enum: Public, Protected, Private
 - `SourceFileExt` field tracks original file extension for correct generation
 - **NEW:** `ProjectConfig`: Holds PlatformIO project configuration with relative library paths
 
-**internal/generator/templates/**
+#### internal/generator/templates/
 
 - `class_header.tmpl`: Generates .hpp/.h with class declaration, override methods
 - `class_source.tmpl`: Generates .cpp with empty method implementations
@@ -267,7 +267,7 @@ Generated Files (.hpp/.h + .cpp)
 - tree-sitter requires CGO, so `CGO_ENABLED=1` is mandatory
 - Cross-compilation is complex; build on target platform when possible
 
-## Testing
+## Test Patterns
 
 Tests use Go's standard testing package. Example pattern:
 
