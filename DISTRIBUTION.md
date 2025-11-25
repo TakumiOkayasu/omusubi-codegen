@@ -56,7 +56,7 @@ tree-sitterはCGOを必要とするため:
 
 # 手動ダウンロード
 # GitHub ReleasesからOS別のバイナリをダウンロード
-# https://github.com/TakumiOkayasu/omusubi-platform-codegen/releases
+# https://github.com/TakumiOkayasu/omusubi-codegen/releases
 ```
 
 ## 2. ローカルビルド
@@ -132,10 +132,10 @@ Goがインストールされている環境で直接インストール可能で
 ### インストール
 
 ```bash
-go install github.com/TakumiOkayasu/omusubi-platform-codegen/cmd/codegen@latest
+go install github.com/TakumiOkayasu/omusubi-codegen/cmd/codegen@latest
 
 # または特定バージョン
-go install github.com/TakumiOkayasu/omusubi-platform-codegen/cmd/codegen@v1.0.0
+go install github.com/TakumiOkayasu/omusubi-codegen/cmd/codegen@v1.0.0
 ```
 
 ### メリット/デメリット

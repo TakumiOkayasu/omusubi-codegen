@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/model"
+	"github.com/TakumiOkayasu/omusubi-codegen/internal/model"
 	"github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/cpp"
 )

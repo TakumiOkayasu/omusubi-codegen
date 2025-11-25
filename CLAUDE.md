@@ -9,7 +9,7 @@ When working in this repository, Claude should communicate in Japanese for all e
 
 ## Project Overview
 
-This is **omusubi-platform-codegen**, a code generation tool for the Omusubi embedded framework. It parses C++ abstract base classes (interfaces) using tree-sitter and generates implementation skeletons (.hpp/.cpp files) with empty method bodies ready for manual implementation.
+This is **omusubi-codegen**, a code generation tool for the Omusubi embedded framework. It parses C++ abstract base classes (interfaces) using tree-sitter and generates implementation skeletons (.hpp/.cpp files) with empty method bodies ready for manual implementation.
 
 **Key technologies:**
 - Go 1.23+ with CGO (required for tree-sitter)

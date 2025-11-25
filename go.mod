@@ -1,4 +1,4 @@
-module github.com/TakumiOkayasu/omusubi-platform-codegen
+module github.com/TakumiOkayasu/omusubi-codegen
 
 go 1.23
 

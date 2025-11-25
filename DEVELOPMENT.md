@@ -62,7 +62,7 @@ cp .env.example .env
 
 ```bash
 # プロジェクトA (.env)
-PROJECT_NAME=omusubi-platform-codegen
+PROJECT_NAME=omusubi-codegen
 USER=yamazaki
 UID=501
 GID=20
@@ -99,7 +99,6 @@ docker compose -f .devcontainer/compose.yaml down
 
 - Go 1.23以上
 - Clang 18以上 (推奨) または GCC 11以上
-- Google Test
 - Make
 
 依存関係のインストール:

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/model"
+	"github.com/TakumiOkayasu/omusubi-codegen/internal/model"
 )
 
 // Generator handles code generation

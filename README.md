@@ -26,7 +26,7 @@ C++インターフェース定義から実装スケルトン（.hpp/.cppファ�
 ### go install
 
 ```bash
-go install github.com/TakumiOkayasu/omusubi-platform-codegen/cmd/codegen@latest
+go install github.com/TakumiOkayasu/omusubi-codegen/cmd/codegen@latest
 # バイナリは $GOPATH/bin/codegen としてインストールされます
 # シンボリックリンクを作成する場合:
 # ln -s $GOPATH/bin/codegen $GOPATH/bin/omusubi-codegen
@@ -35,8 +35,8 @@ go install github.com/TakumiOkayasu/omusubi-platform-codegen/cmd/codegen@latest
 ### ソースからビルド
 
 ```bash
-git clone https://github.com/TakumiOkayasu/omusubi-platform-codegen
-cd omusubi-platform-codegen
+git clone https://github.com/TakumiOkayasu/omusubi-codegen
+cd omusubi-codegen
 make build
 # バイナリは ./omusubi-codegen として生成されます
 ```
@@ -167,7 +167,6 @@ VS Code Dev Containers対応。以下の環境が自動構築されます:
 
 - Go 1.23
 - Clang 18 (latest) + libc++
-- Google Test
 - tree-sitter CLI
 - 各種開発ツール (gopls, golangci-lint等)
 
@@ -197,7 +196,7 @@ go test ./...
 ## プロジェクト構造
 
 ```
-omusubi-platform-codegen/
+omusubi-codegen/
 ├── .devcontainer/          # Dev Container設定
 │   ├── devcontainer.json
 │   └── Dockerfile

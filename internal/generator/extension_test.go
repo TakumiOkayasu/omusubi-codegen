@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/model"
+	"github.com/TakumiOkayasu/omusubi-codegen/internal/model"
 )
 
 // Test that .h files generate .cpp source files (not .c)

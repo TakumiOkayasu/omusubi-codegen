@@ -64,7 +64,7 @@ changelog:
 release:
   github:
     owner: TakumiOkayasu
-    name: omusubi-platform-codegen
+    name: omusubi-codegen
   draft: false
   prerelease: auto
   mode: append
@@ -85,7 +85,7 @@ release:
 
   footer: |
     ---
-    **Full Changelog**: https://github.com/TakumiOkayasu/omusubi-platform-codegen/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/TakumiOkayasu/omusubi-codegen/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 # Homebrewタップ用の設定
 brews:
@@ -93,7 +93,7 @@ brews:
       owner: TakumiOkayasu
       name: homebrew-tap
     directory: Formula
-    homepage: https://github.com/TakumiOkayasu/omusubi-platform-codegen
+    homepage: https://github.com/TakumiOkayasu/omusubi-codegen
     description: "Code generator for Omusubi embedded framework"
     license: "MIT"
     test: |

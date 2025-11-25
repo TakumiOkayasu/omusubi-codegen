@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/model"
+	"github.com/TakumiOkayasu/omusubi-codegen/internal/model"
 )
 
 // Test that generated code includes C++17 features

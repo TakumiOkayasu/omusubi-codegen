@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/generator"
-	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/model"
-	"github.com/TakumiOkayasu/omusubi-platform-codegen/internal/parser"
+	"github.com/TakumiOkayasu/omusubi-codegen/internal/generator"
+	"github.com/TakumiOkayasu/omusubi-codegen/internal/model"
+	"github.com/TakumiOkayasu/omusubi-codegen/internal/parser"
 	"github.com/spf13/cobra"
 )
 
