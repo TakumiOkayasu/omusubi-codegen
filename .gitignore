@@ -65,3 +65,7 @@ Makefile
 
 # Test output
 testdata/output/
+
+# .claude
+.claude/
+
