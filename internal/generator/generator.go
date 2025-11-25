@@ -24,8 +24,6 @@ type Config struct {
 	TemplateDir string
 	OutputDir   string
 	HeaderDir   string // Optional: directory for header files (if different from OutputDir)
-	WithTests   bool
-	WithDocs    bool
 }
 
 // New creates a new code generator
@@ -97,7 +95,7 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 	return nil
 }
 
-// generateSource generates the source file (.cpp or .c)
+// generateSource generates the source file (.cpp)
 func (g *Generator) generateSource(classInfo *model.ClassInfo, derivedClassName string, headerExt string, sourceExt string) error {
 	tmpl, err := g.loadTemplate("class_source.tmpl")
 	if err != nil {
@@ -225,12 +223,6 @@ func formatMethodSignature(method model.MethodInfo, includeVirtual, includeOverr
 	}
 
 	return strings.Join(parts, " ")
-}
-
-// GenerateTests generates Google Test test files
-func (g *Generator) GenerateTests(fileInfo *model.FileInfo) error {
-	// TODO: Implement test generation logic
-	return fmt.Errorf("not implemented")
 }
 
 // ensureOutputDir creates the output directory if it doesn't exist

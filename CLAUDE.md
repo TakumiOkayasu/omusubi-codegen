@@ -195,9 +195,6 @@ Generated Files (.hpp/.h + .cpp)
 - `platformio.ini.tmpl`: Generates PlatformIO configuration with library paths
 - `main.cpp.tmpl`: Generates basic Arduino setup code
 - `gitignore.tmpl`: Generates .gitignore for PlatformIO projects
-- `class_test.tmpl`: (未実装) Google Test用テストファイルテンプレート
-- `class_doc.tmpl`: (未実装) Doxygen形式ドキュメントテンプレート
-- `class_impl.tmpl`: (未使用) 将来の拡張用テンプレート
 - Templates use Go text/template with custom functions
 - All method signatures include `override` keyword
 

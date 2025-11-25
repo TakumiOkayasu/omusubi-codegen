@@ -32,8 +32,7 @@ func newRootCmd() *cobra.Command {
 		Use:   "omusubi-codegen",
 		Short: "Omusubi Platform Code Generator",
 		Long: `A code generation tool for the Omusubi embedded framework.
-Automatically generates C++ implementation skeletons, tests, and documentation
-from interface definitions.`,
+Automatically generates C++ implementation skeletons from interface definitions.`,
 		Version: fmt.Sprintf("%s (commit: %s, built at: %s)", version, commit, date),
 	}
 
