@@ -3,8 +3,10 @@ package generator
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/TakumiOkayasu/omusubi-codegen/internal/model"
 )
@@ -13,9 +15,7 @@ import (
 func TestGenerateImplementation_Cpp17Features(t *testing.T) {
 	// Create temporary output directory
 	tmpDir, err := os.MkdirTemp("", "generator-cpp17-test-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
+	require.NoError(t, err, "Failed to create temp dir")
 	defer os.RemoveAll(tmpDir)
 
 	// Create generator
@@ -42,16 +42,12 @@ func TestGenerateImplementation_Cpp17Features(t *testing.T) {
 	// Generate implementation
 	derivedClassName := "TestDevice"
 	err = gen.GenerateImplementation(classInfo, derivedClassName)
-	if err != nil {
-		t.Fatalf("GenerateImplementation failed: %v", err)
-	}
+	require.NoError(t, err, "GenerateImplementation failed")
 
 	// Read generated header file
 	headerPath := filepath.Join(tmpDir, "test_device.hpp")
 	content, err := os.ReadFile(headerPath)
-	if err != nil {
-		t.Fatalf("Failed to read generated header: %v", err)
-	}
+	require.NoError(t, err, "Failed to read generated header")
 
 	headerContent := string(content)
 
@@ -68,10 +64,8 @@ func TestGenerateImplementation_Cpp17Features(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if !strings.Contains(headerContent, tt.pattern) {
-				t.Errorf("Generated header does not contain expected C++17 feature: %q", tt.pattern)
-				t.Logf("Generated content:\n%s", headerContent)
-			}
+			assert.Contains(t, headerContent, tt.pattern,
+				"Generated header does not contain expected C++17 feature")
 		})
 	}
 }

@@ -1,6 +1,10 @@
 package generator
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestToSnakeCase(t *testing.T) {
 	tests := []struct {
@@ -17,7 +21,7 @@ func TestToSnakeCase(t *testing.T) {
 		{"ALLCAPS", "allcaps"},
 		{"M5Stack", "m5stack"},
 		{"M5StackConnectableContext", "m5stack_connectable_context"},
-		{"M5StackSpan", "m5stack_span"}, // Fix for span issue (span -> Span)
+		{"M5StackSpan", "m5stack_span"},
 		{"ESP32Device", "esp32device"},
 		{"STM32Controller", "stm32controller"},
 	}
@@ -25,9 +29,7 @@ func TestToSnakeCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
 			result := toSnakeCase(tt.input)
-			if result != tt.expected {
-				t.Errorf("toSnakeCase(%q) = %q; want %q", tt.input, result, tt.expected)
-			}
+			assert.Equal(t, tt.expected, result, "toSnakeCase(%q)", tt.input)
 		})
 	}
 }

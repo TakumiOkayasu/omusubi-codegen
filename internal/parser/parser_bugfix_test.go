@@ -2,6 +2,9 @@ package parser
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestParseSourceWithValidInput tests that ParseSource properly handles valid C++ code
@@ -20,26 +23,13 @@ public:
 `)
 
 	fileInfo, err := p.ParseSource(source)
-	if err != nil {
-		t.Fatalf("ParseSource failed with valid input: %v", err)
-	}
-
-	if fileInfo == nil {
-		t.Fatal("ParseSource returned nil fileInfo")
-	}
-
-	if len(fileInfo.Classes) == 0 {
-		t.Fatal("ParseSource did not find any classes")
-	}
+	require.NoError(t, err, "ParseSource failed with valid input")
+	require.NotNil(t, fileInfo, "ParseSource returned nil fileInfo")
+	require.NotEmpty(t, fileInfo.Classes, "ParseSource did not find any classes")
 
 	classInfo := fileInfo.Classes[0]
-	if classInfo.Name != "IDevice" {
-		t.Errorf("Expected class name 'IDevice', got '%s'", classInfo.Name)
-	}
-
-	if !classInfo.IsAbstract {
-		t.Error("Expected class to be marked as abstract")
-	}
+	assert.Equal(t, "IDevice", classInfo.Name)
+	assert.True(t, classInfo.IsAbstract, "Expected class to be marked as abstract")
 }
 
 // TestParseSourceWithEmptyInput tests that ParseSource handles empty input gracefully
@@ -49,18 +39,11 @@ func TestParseSourceWithEmptyInput(t *testing.T) {
 	source := []byte("")
 
 	fileInfo, err := p.ParseSource(source)
-	if err != nil {
-		t.Fatalf("ParseSource failed with empty input: %v", err)
-	}
-
-	if fileInfo == nil {
-		t.Fatal("ParseSource returned nil fileInfo")
-	}
+	require.NoError(t, err, "ParseSource failed with empty input")
+	require.NotNil(t, fileInfo, "ParseSource returned nil fileInfo")
 
 	// Empty input should result in no classes found, but should not panic
-	if len(fileInfo.Classes) != 0 {
-		t.Errorf("Expected 0 classes for empty input, got %d", len(fileInfo.Classes))
-	}
+	assert.Empty(t, fileInfo.Classes, "Expected 0 classes for empty input")
 }
 
 // TestParseSourceDoesNotPanic tests that ParseSource does not panic with various inputs
@@ -80,15 +63,9 @@ func TestParseSourceDoesNotPanic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			defer func() {
-				if r := recover(); r != nil {
-					t.Errorf("ParseSource panicked with input '%s': %v", tc.name, r)
-				}
-			}()
-
-			_, err := p.ParseSource(tc.source)
-			// We don't care about errors here, just that it doesn't panic
-			_ = err
+			assert.NotPanics(t, func() {
+				_, _ = p.ParseSource(tc.source)
+			}, "ParseSource panicked with input '%s'", tc.name)
 		})
 	}
 }
