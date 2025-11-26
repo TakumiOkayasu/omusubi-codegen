@@ -16,26 +16,19 @@ import (
 type Generator struct {
 	templateDir string
 	outputDir   string
-	headerDir   string // Optional: separate directory for header files
 }
 
 // Config holds generator configuration
 type Config struct {
 	TemplateDir string
 	OutputDir   string
-	HeaderDir   string // Optional: directory for header files (if different from OutputDir)
 }
 
 // New creates a new code generator
 func New(cfg Config) *Generator {
-	headerDir := cfg.HeaderDir
-	if headerDir == "" {
-		headerDir = cfg.OutputDir
-	}
 	return &Generator{
 		templateDir: cfg.TemplateDir,
 		outputDir:   cfg.OutputDir,
-		headerDir:   headerDir,
 	}
 }
 
@@ -80,12 +73,7 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 	}
 
 	filename := toSnakeCase(derivedClassName) + "." + headerExt
-	outputPath := g.getHeaderPath(filename)
-
-	// Ensure header directory exists
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
-		return fmt.Errorf("failed to create header directory: %w", err)
-	}
+	outputPath := g.getOutputPath(filename)
 
 	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
 		return fmt.Errorf("failed to write header file: %w", err)
@@ -138,13 +126,13 @@ func (g *Generator) prepareTemplateData(classInfo *model.ClassInfo, derivedClass
 	}
 
 	return map[string]interface{}{
-		"ClassName":          derivedClassName,
-		"BaseClass":          classInfo.Name,
-		"BaseClassExt":       baseClassExt,
-		"Namespace":          classInfo.Namespace,
-		"Methods":            pureVirtualMethods,
-		"HasNamespace":       classInfo.Namespace != "",
-		"FormatParameters":   formatParameters,
+		"ClassName":             derivedClassName,
+		"BaseClass":             classInfo.Name,
+		"BaseClassExt":          baseClassExt,
+		"Namespace":             classInfo.Namespace,
+		"Methods":               pureVirtualMethods,
+		"HasNamespace":          classInfo.Namespace != "",
+		"FormatParameters":      formatParameters,
 		"FormatMethodSignature": formatMethodSignature,
 	}
 }
@@ -154,9 +142,9 @@ func (g *Generator) loadTemplate(name string) (*template.Template, error) {
 	funcMap := template.FuncMap{
 		"formatParameters":      formatParameters,
 		"formatMethodSignature": formatMethodSignature,
-		"toLower":              strings.ToLower,
-		"toUpper":              strings.ToUpper,
-		"toSnakeCase":          toSnakeCase,
+		"toLower":               strings.ToLower,
+		"toUpper":               strings.ToUpper,
+		"toSnakeCase":           toSnakeCase,
 	}
 
 	// 埋め込みファイルシステムからテンプレートを読み込む
@@ -238,11 +226,6 @@ func (g *Generator) getOutputPath(filename string) string {
 	return filepath.Join(g.outputDir, filename)
 }
 
-// getHeaderPath returns the full path for a header file
-func (g *Generator) getHeaderPath(filename string) string {
-	return filepath.Join(g.headerDir, filename)
-}
-
 // toSnakeCase converts CamelCase or PascalCase to snake_case
 // Preserves number+uppercase letter combinations (e.g., M5Stack -> m5stack)
 func toSnakeCase(s string) string {
@@ -254,102 +237,3 @@ func toSnakeCase(s string) string {
 	// Convert to lowercase
 	return strings.ToLower(snake)
 }
-
-// GenerateProject generates a complete PlatformIO project structure
-func (g *Generator) GenerateProject(config *model.ProjectConfig) error {
-	// Create project directory
-	if err := os.MkdirAll(config.ProjectPath, 0755); err != nil {
-		return fmt.Errorf("failed to create project directory: %w", err)
-	}
-
-	// Create src directory
-	srcDir := filepath.Join(config.ProjectPath, "src")
-	if err := os.MkdirAll(srcDir, 0755); err != nil {
-		return fmt.Errorf("failed to create src directory: %w", err)
-	}
-
-	// Create include directory structure: include/omusubi/platform/<device_name>/
-	deviceNameLower := strings.ToLower(config.DeviceName)
-	includeDir := filepath.Join(config.ProjectPath, "include", "omusubi", "platform", deviceNameLower)
-	if err := os.MkdirAll(includeDir, 0755); err != nil {
-		return fmt.Errorf("failed to create include directory: %w", err)
-	}
-
-	// Generate platformio.ini
-	if err := g.generatePlatformIOConfig(config); err != nil {
-		return fmt.Errorf("failed to generate platformio.ini: %w", err)
-	}
-
-	// Generate main.cpp
-	if err := g.generateMainCpp(config); err != nil {
-		return fmt.Errorf("failed to generate main.cpp: %w", err)
-	}
-
-	// Generate .gitignore
-	if err := g.generateGitignore(config); err != nil {
-		return fmt.Errorf("failed to generate .gitignore: %w", err)
-	}
-
-	return nil
-}
-
-// generatePlatformIOConfig generates platformio.ini file
-func (g *Generator) generatePlatformIOConfig(config *model.ProjectConfig) error {
-	tmpl, err := g.loadTemplate("platformio.ini.tmpl")
-	if err != nil {
-		return err
-	}
-
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, config); err != nil {
-		return fmt.Errorf("failed to execute template: %w", err)
-	}
-
-	outputPath := filepath.Join(config.ProjectPath, "platformio.ini")
-	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
-		return fmt.Errorf("failed to write platformio.ini: %w", err)
-	}
-
-	return nil
-}
-
-// generateMainCpp generates main.cpp file
-func (g *Generator) generateMainCpp(config *model.ProjectConfig) error {
-	tmpl, err := g.loadTemplate("main.cpp.tmpl")
-	if err != nil {
-		return err
-	}
-
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, config); err != nil {
-		return fmt.Errorf("failed to execute template: %w", err)
-	}
-
-	outputPath := filepath.Join(config.ProjectPath, "src", "main.cpp")
-	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
-		return fmt.Errorf("failed to write main.cpp: %w", err)
-	}
-
-	return nil
-}
-
-// generateGitignore generates .gitignore file
-func (g *Generator) generateGitignore(config *model.ProjectConfig) error {
-	tmpl, err := g.loadTemplate("gitignore.tmpl")
-	if err != nil {
-		return err
-	}
-
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, config); err != nil {
-		return fmt.Errorf("failed to execute template: %w", err)
-	}
-
-	outputPath := filepath.Join(config.ProjectPath, ".gitignore")
-	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
-		return fmt.Errorf("failed to write .gitignore: %w", err)
-	}
-
-	return nil
-}
-

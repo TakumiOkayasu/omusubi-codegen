@@ -17,7 +17,7 @@ func TestToSnakeCase(t *testing.T) {
 		{"ALLCAPS", "allcaps"},
 		{"M5Stack", "m5stack"},
 		{"M5StackConnectableContext", "m5stack_connectable_context"},
-		{"M5StackSpan", "m5stack_span"},  // Fix for span issue (span -> Span)
+		{"M5StackSpan", "m5stack_span"}, // Fix for span issue (span -> Span)
 		{"ESP32Device", "esp32device"},
 		{"STM32Controller", "stm32controller"},
 	}

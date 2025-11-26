@@ -22,7 +22,7 @@ var (
 
 func main() {
 	if err := newRootCmd().Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "エラー: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -30,9 +30,9 @@ func main() {
 func newRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "omusubi-codegen",
-		Short: "Omusubi Platform Code Generator",
-		Long: `A code generation tool for the Omusubi embedded framework.
-Automatically generates C++ implementation skeletons from interface definitions.`,
+		Short: "Omusubi プラットフォーム コードジェネレーター",
+		Long: `Omusubi 組み込みフレームワーク用のコード生成ツールです。
+インターフェース定義から C++ 実装のスケルトンを自動生成します。`,
 		Version: fmt.Sprintf("%s (commit: %s, built at: %s)", version, commit, date),
 	}
 
@@ -44,136 +44,82 @@ Automatically generates C++ implementation skeletons from interface definitions.
 
 func newGenerateCmd() *cobra.Command {
 	var (
-		repoPath        string
-		baseClass       string
-		className       string
-		outputDir       string
-		templateDir     string
-		createProject   bool
-		projectName     string
-		board           string
-		coreLibPath     string
-		platformLibPath string
-		useLegacyName   bool
+		repoPath      string
+		className     string
+		outputDir     string
+		templateDir   string
+		useLegacyName bool
 	)
 
 	cmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Generate C++ implementation from abstract base class",
-		Long: `Generate C++ implementation (.hpp and .cpp) files by overriding
-pure virtual functions from an abstract base class found in the omusubi repository.
+		Short: "抽象基底クラスから C++ 実装を生成",
+		Long: `omusubi リポジトリ内の抽象基底クラスから純粋仮想関数を
+オーバーライドした C++ 実装ファイル (.hpp/.cpp) を生成します。
 
-The command will:
-1. Search for the abstract base class in the specified repository
-2. Extract all pure virtual methods
-3. Prompt for the derived class name
-4. Generate header and source files with empty method bodies
-5. Optionally create a complete PlatformIO project structure`,
+このコマンドは以下の処理を行います:
+1. 指定されたリポジトリ内の抽象基底クラスを検索
+2. すべての純粋仮想メソッドを抽出
+3. 派生クラス名の入力を促す
+4. 空のメソッド本体を持つヘッダーとソースファイルを生成`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGenerate(repoPath, baseClass, className, outputDir, templateDir, createProject, projectName, board, coreLibPath, platformLibPath, useLegacyName)
+			return runGenerate(repoPath, className, outputDir, templateDir, useLegacyName)
 		},
 	}
 
 	cmd.Flags().StringVarP(&repoPath, "repo", "r", "",
-		"Path to omusubi repository (optional, will auto-detect if not provided)\n"+
-		"Example: --repo /path/to/omusubi/include")
-
-	cmd.Flags().StringVarP(&baseClass, "base", "b", "",
-		"Base class name to search for (optional, will prompt if not provided)\n"+
-		"Example: --base IDevice")
+		"omusubi リポジトリへのパス（省略可、未指定時は自動検出）\n"+
+			"例: --repo /path/to/omusubi/include")
 
 	cmd.Flags().StringVarP(&className, "class", "c", "",
-		"Derived class name prefix (optional, will prompt if not provided)\n"+
-		"Example: --class M5Stack (generates M5StackXxx classes)")
+		"派生クラス名のプレフィックス（省略可、未指定時はプロンプト表示）\n"+
+			"例: --class M5Stack（M5StackXxx クラスを生成）")
 
 	cmd.Flags().StringVarP(&outputDir, "output", "o", ".",
-		"Output directory for generated implementation files (.cpp)\n"+
-		"Default: current directory\n"+
-		"When --project is used: <project-name>/src")
+		"生成ファイル (.hpp/.cpp) の出力ディレクトリ\n"+
+			"例: --output ./src")
 
 	cmd.Flags().StringVarP(&templateDir, "templates", "t", "internal/generator/templates",
-		"Template directory (advanced users only)\n"+
-		"Default: embedded templates")
-
-	cmd.Flags().BoolVarP(&createProject, "project", "p", false,
-		"Create a complete PlatformIO project structure\n"+
-		"Generates: platformio.ini, src/main.cpp, include/ directory, .gitignore\n"+
-		"Requires: --project-name")
-
-	cmd.Flags().StringVar(&projectName, "project-name", "",
-		"Project name for PlatformIO project (required when --project is used)\n"+
-		"Example: --project-name my-m5stack-project\n"+
-		"Creates directory: ./my-m5stack-project/")
-
-	cmd.Flags().StringVar(&board, "board", "m5stack-core-esp32",
-		"PlatformIO board identifier (used with --project)\n"+
-		"Common boards: m5stack-core-esp32, esp32dev, esp32-s3-devkitc-1\n"+
-		"See: https://docs.platformio.org/en/latest/boards/")
-
-	cmd.Flags().StringVar(&coreLibPath, "core-lib", "",
-		"Path to omusubi core library (optional, will auto-detect)\n"+
-		"Auto-detection searches parent directories for 'omusubi/' folder\n"+
-		"Example: --core-lib ../omusubi")
-
-	cmd.Flags().StringVar(&platformLibPath, "platform-lib", "",
-		"Path to platform implementation library (optional, will auto-detect)\n"+
-		"Auto-detection searches for 'omusubi-*/' folders (e.g., omusubi-m5stack)\n"+
-		"Example: --platform-lib ../omusubi-m5stack")
+		"テンプレートディレクトリ（上級者向け）\n"+
+			"デフォルト: 組み込みテンプレート")
 
 	cmd.Flags().BoolVar(&useLegacyName, "legacy-name", false,
-		"Use legacy 'pre-omusubi' directory names for alpha version support\n"+
-		"Searches for 'pre-omusubi' instead of 'omusubi'\n"+
-		"This flag will be removed after official release\n"+
-		"Example: --legacy-name --project --project-name my-project")
+		"アルファ版サポート用のレガシー 'pre-omusubi' ディレクトリ名を使用\n"+
+			"'omusubi' の代わりに 'pre-omusubi' を検索\n"+
+			"このフラグは正式リリース後に削除予定")
 
 	return cmd
 }
 
-func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, createProject bool, projectName string, board string, coreLibPath string, platformLibPath string, useLegacyName bool) error {
+func runGenerate(repoPath, className, outputDir, templateDir string, useLegacyName bool) error {
 	// Create parser
 	p := parser.New()
 
 	// Auto-detect workspace if paths not provided
-	if repoPath == "" && coreLibPath == "" {
+	var coreLibPath string
+	if repoPath == "" {
 		libNameDisplay := "omusubi"
 		if useLegacyName {
 			libNameDisplay = "pre-omusubi (alpha)"
 		}
-		fmt.Printf("Attempting to auto-detect %s workspace...\n", libNameDisplay)
-		detectedCore, detectedPlatform, err := parser.DetectWorkspace(".", useLegacyName)
+		fmt.Printf("%s ワークスペースを自動検出中...\n", libNameDisplay)
+		detectedCore, _, err := parser.DetectWorkspace(".", useLegacyName)
 		if err != nil {
-			return fmt.Errorf("workspace auto-detection failed: %w\nPlease specify --repo or --core-lib explicitly", err)
+			return fmt.Errorf("ワークスペースの自動検出に失敗しました: %w\n--repo を明示的に指定してください", err)
 		}
 		coreLibPath = detectedCore
-		platformLibPath = detectedPlatform
-		fmt.Printf("✓ Detected core library: %s\n", coreLibPath)
-		if platformLibPath != "" {
-			fmt.Printf("✓ Detected platform library: %s\n", platformLibPath)
-		}
-		// Set repoPath to core library include path for parsing
-		repoPath = coreLibPath + "/include"
-	} else if repoPath == "" {
+		fmt.Printf("✓ コアライブラリを検出: %s\n", coreLibPath)
 		repoPath = coreLibPath + "/include"
 	}
 
-	// Validate project creation requirements
-	if createProject {
-		if projectName == "" {
-			return fmt.Errorf("--project-name is required when --project is specified")
-		}
-		if coreLibPath == "" {
-			return fmt.Errorf("core library path could not be determined. Please specify --core-lib")
-		}
-	}
-
-	fmt.Println("Searching for abstract classes in repository...")
+	fmt.Println("リポジトリ内の抽象クラスを検索中...")
 	fileInfos, err := p.ParseDirectory(repoPath)
 	if err != nil {
-		return fmt.Errorf("failed to parse repository: %w", err)
+		return fmt.Errorf("リポジトリの解析に失敗しました: %w", err)
 	}
 
 	if len(fileInfos) == 0 {
-		return fmt.Errorf("no abstract classes found in %s", repoPath)
+		return fmt.Errorf("%s に抽象クラスが見つかりませんでした", repoPath)
 	}
 
 	// Collect all abstract classes
@@ -204,21 +150,21 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, 
 	}
 
 	if len(classOptions) == 0 {
-		return fmt.Errorf("no abstract classes found in %s", repoPath)
+		return fmt.Errorf("%s に抽象クラスが見つかりませんでした", repoPath)
 	}
 
 	// Ask if user wants to select all
 	var selectAllResponse string
 	selectAllPrompt := &survey.Select{
-		Message: fmt.Sprintf("Found %d abstract classes. Select all?", len(classOptions)),
-		Options: []string{"Yes - Select all classes", "No - Choose individually"},
-		Default: "No - Choose individually",
+		Message: fmt.Sprintf("%d 個の抽象クラスが見つかりました。すべて選択しますか？", len(classOptions)),
+		Options: []string{"はい - すべてのクラスを選択", "いいえ - 個別に選択"},
+		Default: "いいえ - 個別に選択",
 	}
 	if err := survey.AskOne(selectAllPrompt, &selectAllResponse); err != nil {
-		return fmt.Errorf("failed to get user input: %w", err)
+		return fmt.Errorf("ユーザー入力の取得に失敗しました: %w", err)
 	}
 
-	selectAllClasses := strings.HasPrefix(selectAllResponse, "Yes")
+	selectAllClasses := strings.HasPrefix(selectAllResponse, "はい")
 
 	var selectedIndices []int
 
@@ -227,108 +173,49 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, 
 		for i := range classOptions {
 			selectedIndices = append(selectedIndices, i)
 		}
-		fmt.Printf("\n✓ All %d classes selected\n", len(selectedIndices))
+		fmt.Printf("\n✓ %d 個のクラスをすべて選択しました\n", len(selectedIndices))
 	} else {
 		// Create options for survey
 		var options []string
 		for _, opt := range classOptions {
-			options = append(options, fmt.Sprintf("%s (from %s)", opt.FullName, opt.FilePath))
+			options = append(options, fmt.Sprintf("%s（%s より）", opt.FullName, opt.FilePath))
 		}
 
 		// Multi-select prompt
 		prompt := &survey.MultiSelect{
-			Message: "Select abstract classes to implement:",
+			Message: "実装する抽象クラスを選択してください:",
 			Options: options,
-			Help:    "Use arrow keys to move, space to select/deselect, enter to confirm",
+			Help:    "矢印キーで移動、スペースで選択/解除、エンターで確定",
 		}
 
 		if err := survey.AskOne(prompt, &selectedIndices); err != nil {
-			return fmt.Errorf("failed to get user selection: %w", err)
+			return fmt.Errorf("ユーザー選択の取得に失敗しました: %w", err)
 		}
 
 		if len(selectedIndices) == 0 {
-			return fmt.Errorf("no classes selected")
+			return fmt.Errorf("クラスが選択されていません")
 		}
 	}
 
 	// Get derived class name prefix(DeviceName) if not provided
 	classPrefix := className
 	if classPrefix == "" {
-		fmt.Print("\nEnter derived class name prefix (will be used as: <DeviceName><BaseClassName>): ")
+		fmt.Print("\n派生クラス名のプレフィックスを入力してください（<デバイス名><基底クラス名> として使用）: ")
 		classPrefix = readLine()
 		if classPrefix == "" {
 			classPrefix = "My"
 		}
 	}
 
-	// Determine actual output directories
-	actualOutputDir := outputDir
-	actualHeaderDir := ""
-	if createProject {
-		actualOutputDir = projectName + "/src"
-		// Headers go to include/omusubi/platform/<device_name>/
-		deviceNameLower := strings.ToLower(classPrefix)
-		actualHeaderDir = filepath.Join(projectName, "include", "omusubi", "platform", deviceNameLower)
-	}
-
 	// Create generator
 	gen := generator.New(generator.Config{
 		TemplateDir: templateDir,
-		OutputDir:   actualOutputDir,
-		HeaderDir:   actualHeaderDir,
+		OutputDir:   outputDir,
 	})
 
-	// Create PlatformIO project if requested
-	if createProject {
-		fmt.Printf("\nCreating PlatformIO project: %s\n", projectName)
-
-		// Calculate relative paths from project to libraries
-		projectAbsPath, err := filepath.Abs(projectName)
-		if err != nil {
-			return fmt.Errorf("failed to get absolute path for project: %w", err)
-		}
-
-		coreLibAbsPath, err := filepath.Abs(coreLibPath)
-		if err != nil {
-			return fmt.Errorf("failed to get absolute path for core library: %w", err)
-		}
-
-		relCoreLibPath, err := filepath.Rel(projectAbsPath, coreLibAbsPath)
-		if err != nil {
-			return fmt.Errorf("failed to calculate relative path to core library: %w", err)
-		}
-
-		var relPlatformLibPath string
-		if platformLibPath != "" {
-			platformLibAbsPath, err := filepath.Abs(platformLibPath)
-			if err != nil {
-				return fmt.Errorf("failed to get absolute path for platform library: %w", err)
-			}
-			relPlatformLibPath, err = filepath.Rel(projectAbsPath, platformLibAbsPath)
-			if err != nil {
-				return fmt.Errorf("failed to calculate relative path to platform library: %w", err)
-			}
-		}
-
-		projectConfig := &model.ProjectConfig{
-			ProjectName:     projectName,
-			ProjectPath:     projectAbsPath,
-			CoreLibPath:     relCoreLibPath,
-			PlatformLibPath: relPlatformLibPath,
-			Board:           board,
-			Framework:       "arduino",
-			DeviceName:      classPrefix,
-		}
-
-		if err := gen.GenerateProject(projectConfig); err != nil {
-			return fmt.Errorf("failed to generate project: %w", err)
-		}
-
-		fmt.Printf("  ✓ Created project structure at %s\n", projectName)
-	}
-
 	// Generate files for each selected class
-	fmt.Printf("\nGenerating implementation files...\n")
+	fmt.Printf("\n実装ファイルを生成中...\n")
+	var generatedFiles []string
 	successCount := 0
 	for _, idx := range selectedIndices {
 		selectedClass := classOptions[idx]
@@ -339,28 +226,57 @@ func runGenerate(repoPath, baseClass, className, outputDir, templateDir string, 
 		}
 		derivedName := classPrefix + baseName
 
-		fmt.Printf("\n[%d/%d] Generating %s from %s...\n",
+		fmt.Printf("\n[%d/%d] %s を %s から生成中...\n",
 			successCount+1, len(selectedIndices), derivedName, selectedClass.FullName)
 
 		if err := gen.GenerateImplementation(selectedClass.ClassInfo, derivedName); err != nil {
-			fmt.Fprintf(os.Stderr, "  ✗ Failed to generate %s: %v\n", derivedName, err)
+			fmt.Fprintf(os.Stderr, "  ✗ %s の生成に失敗しました: %v\n", derivedName, err)
 			continue
 		}
 
-		fmt.Printf("  ✓ Generated %s.hpp and %s.cpp\n", derivedName, derivedName)
+		fmt.Printf("  ✓ %s.hpp と %s.cpp を生成しました\n", derivedName, derivedName)
+		generatedFiles = append(generatedFiles, derivedName)
 		successCount++
 	}
 
-	fmt.Printf("\n✓ Code generation completed!\n")
-	fmt.Printf("Successfully generated: %d/%d classes\n", successCount, len(selectedIndices))
-	if createProject {
-		fmt.Printf("Project directory: %s\n", projectName)
-		fmt.Printf("\nTo build and upload:\n")
-		fmt.Printf("  cd %s\n", projectName)
-		fmt.Printf("  pio run -t upload\n")
-	} else {
-		fmt.Printf("Output directory: %s\n", actualOutputDir)
+	// Output summary and helpful information
+	fmt.Printf("\n" + strings.Repeat("=", 60) + "\n")
+	fmt.Printf("✓ コード生成が完了しました！\n")
+	fmt.Printf("生成成功: %d/%d クラス\n", successCount, len(selectedIndices))
+
+	// Get absolute path for output directory
+	absOutputDir, _ := filepath.Abs(outputDir)
+	fmt.Printf("出力ディレクトリ: %s\n", absOutputDir)
+
+	// Print helpful information for PlatformIO project setup
+	fmt.Printf("\n" + strings.Repeat("-", 60) + "\n")
+	fmt.Printf("【PlatformIO プロジェクトのセットアップ】\n\n")
+	fmt.Printf("1. プロジェクトを初期化:\n")
+	fmt.Printf("   pio project init --board <ボード名>\n")
+	fmt.Printf("   例: pio project init --board m5stack-core-esp32\n\n")
+
+	fmt.Printf("2. platformio.ini に以下を追加:\n")
+	fmt.Printf("   [env:<環境名>]\n")
+	fmt.Printf("   platform = espressif32\n")
+	fmt.Printf("   board = <ボード名>\n")
+	fmt.Printf("   framework = arduino\n")
+	if coreLibPath != "" {
+		relCorePath, _ := filepath.Rel(".", coreLibPath)
+		fmt.Printf("   lib_deps = \n")
+		fmt.Printf("       %s\n", relCorePath)
 	}
+	fmt.Printf("   build_flags = \n")
+	fmt.Printf("       -I include\n")
+	if coreLibPath != "" {
+		fmt.Printf("       -I %s/include\n", coreLibPath)
+	}
+
+	fmt.Printf("\n3. 生成されたファイルを適切なディレクトリに配置:\n")
+	fmt.Printf("   - ヘッダー (.hpp/.h): include/ ディレクトリ\n")
+	fmt.Printf("   - ソース (.cpp): src/ ディレクトリ\n")
+
+	fmt.Printf("\n" + strings.Repeat("=", 60) + "\n")
+
 	return nil
 }
 
@@ -378,16 +294,16 @@ func newParseCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "parse",
-		Short: "Parse omusubi repository and list abstract classes",
-		Long: `Parse all header files in the omusubi repository and display
-information about abstract classes and their pure virtual methods.`,
+		Short: "omusubi リポジトリを解析して抽象クラスを一覧表示",
+		Long: `omusubi リポジトリ内のすべてのヘッダーファイルを解析し、
+抽象クラスとその純粋仮想メソッドの情報を表示します。`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runParse(repoPath, verbose)
 		},
 	}
 
-	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "Path to omusubi repository (required)")
-	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Show detailed method information")
+	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "omusubi リポジトリへのパス（必須）")
+	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "詳細なメソッド情報を表示")
 	cmd.MarkFlagRequired("repo")
 
 	return cmd
@@ -396,29 +312,29 @@ information about abstract classes and their pure virtual methods.`,
 func runParse(repoPath string, verbose bool) error {
 	p := parser.New()
 
-	fmt.Printf("Parsing repository: %s\n", repoPath)
+	fmt.Printf("リポジトリを解析中: %s\n", repoPath)
 	fileInfos, err := p.ParseDirectory(repoPath)
 	if err != nil {
-		return fmt.Errorf("failed to parse repository: %w", err)
+		return fmt.Errorf("リポジトリの解析に失敗しました: %w", err)
 	}
 
 	if len(fileInfos) == 0 {
-		fmt.Println("No abstract classes found.")
+		fmt.Println("抽象クラスが見つかりませんでした。")
 		return nil
 	}
 
-	fmt.Printf("\nFound %d file(s) with abstract classes:\n\n", len(fileInfos))
+	fmt.Printf("\n抽象クラスを含む %d 個のファイルが見つかりました:\n\n", len(fileInfos))
 
 	for _, fileInfo := range fileInfos {
-		fmt.Printf("File: %s\n", fileInfo.Path)
+		fmt.Printf("ファイル: %s\n", fileInfo.Path)
 		if fileInfo.Namespace != "" {
-			fmt.Printf("Namespace: %s\n", fileInfo.Namespace)
+			fmt.Printf("名前空間: %s\n", fileInfo.Namespace)
 		}
 
 		for _, classInfo := range fileInfo.Classes {
-			fmt.Printf("\n  Class: %s", classInfo.Name)
+			fmt.Printf("\n  クラス: %s", classInfo.Name)
 			if len(classInfo.BaseClasses) > 0 {
-				fmt.Printf(" (extends: %s)", strings.Join(classInfo.BaseClasses, ", "))
+				fmt.Printf("（継承元: %s）", strings.Join(classInfo.BaseClasses, ", "))
 			}
 			fmt.Println()
 
@@ -429,10 +345,10 @@ func runParse(repoPath string, verbose bool) error {
 				}
 			}
 
-			fmt.Printf("  Pure virtual methods: %d\n", pureVirtualCount)
+			fmt.Printf("  純粋仮想メソッド数: %d\n", pureVirtualCount)
 
 			if verbose && pureVirtualCount > 0 {
-				fmt.Println("  Methods:")
+				fmt.Println("  メソッド:")
 				for _, method := range classInfo.Methods {
 					if method.IsPureVirtual {
 						fmt.Printf("    - %s %s(", method.ReturnType, method.Name)

@@ -236,7 +236,14 @@ func (p *Parser) extractMethodInfo(node *sitter.Node, source []byte, access mode
 	// Check for virtual, pure virtual, const, static, override
 	nodeContent := node.Content(source)
 	method.IsVirtual = containsKeyword(nodeContent, "virtual")
-	method.IsPureVirtual = containsKeyword(nodeContent, "= 0")
+	// Pure virtual methods have "= 0" but no implementation body (compound_statement)
+	// Methods with implementation body may have "= 0" in their code (e.g., "int x = 0;")
+	hasBody := p.findNodeByType(node, "compound_statement") != nil
+	if hasBody {
+		method.IsPureVirtual = false
+	} else {
+		method.IsPureVirtual = containsKeyword(nodeContent, "= 0")
+	}
 	method.IsConst = containsKeyword(nodeContent, "const")
 	method.IsStatic = containsKeyword(nodeContent, "static")
 	method.IsOverride = containsKeyword(nodeContent, "override")

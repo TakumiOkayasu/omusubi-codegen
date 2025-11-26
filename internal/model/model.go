@@ -70,16 +70,3 @@ type FileInfo struct {
 	Classes   []ClassInfo
 	Namespace string
 }
-
-// ProjectConfig represents PlatformIO project configuration
-type ProjectConfig struct {
-	ProjectName         string   // e.g., "my-m5stack-project"
-	ProjectPath         string   // Absolute path to project directory
-	CoreLibPath         string   // Relative path to omusubi core library (e.g., "../omusubi")
-	PlatformLibPath     string   // Relative path to platform library (e.g., "../omusubi-m5stack")
-	Board               string   // PlatformIO board (e.g., "m5stack-core-esp32")
-	Framework           string   // Framework (e.g., "arduino")
-	DeviceName          string   // Device name prefix (e.g., "M5Stack") - used for directory structure
-	AdditionalLibDirs   []string // Additional library directories
-	BuildFlags          []string // Additional build flags
-}
