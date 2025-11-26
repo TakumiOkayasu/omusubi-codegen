@@ -22,7 +22,9 @@ func New() *Parser {
 	parser := sitter.NewParser()
 	lang := cpp.GetLanguage()
 	if lang == nil {
-		panic("failed to get C++ language from tree-sitter")
+		// This should never happen as tree-sitter-cpp is embedded
+		// but we handle it gracefully instead of panicking
+		return nil
 	}
 	parser.SetLanguage(lang)
 	return &Parser{

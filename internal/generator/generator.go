@@ -12,6 +12,12 @@ import (
 	"github.com/TakumiOkayasu/omusubi-codegen/internal/model"
 )
 
+// File permission constants
+const (
+	DirPermission  = 0755 // Directory permission (rwxr-xr-x)
+	FilePermission = 0644 // File permission (rw-r--r--)
+)
+
 // Generator handles code generation
 type Generator struct {
 	templateDir string
@@ -75,7 +81,7 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 	filename := toSnakeCase(derivedClassName) + "." + headerExt
 	outputPath := g.getOutputPath(filename)
 
-	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(outputPath, buf.Bytes(), FilePermission); err != nil {
 		return fmt.Errorf("failed to write header file: %w", err)
 	}
 
@@ -101,7 +107,7 @@ func (g *Generator) generateSource(classInfo *model.ClassInfo, derivedClassName 
 	filename := toSnakeCase(derivedClassName) + "." + sourceExt
 	outputPath := g.getOutputPath(filename)
 
-	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(outputPath, buf.Bytes(), FilePermission); err != nil {
 		return fmt.Errorf("failed to write source file: %w", err)
 	}
 
@@ -215,7 +221,7 @@ func formatMethodSignature(method model.MethodInfo, includeVirtual, includeOverr
 
 // ensureOutputDir creates the output directory if it doesn't exist
 func (g *Generator) ensureOutputDir() error {
-	if err := os.MkdirAll(g.outputDir, 0755); err != nil {
+	if err := os.MkdirAll(g.outputDir, DirPermission); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 	return nil

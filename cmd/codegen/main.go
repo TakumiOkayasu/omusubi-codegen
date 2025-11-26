@@ -94,6 +94,9 @@ func newGenerateCmd() *cobra.Command {
 func runGenerate(repoPath, className, outputDir, templateDir string, useLegacyName bool) error {
 	// Create parser
 	p := parser.New()
+	if p == nil {
+		return fmt.Errorf("パーサーの初期化に失敗しました: tree-sitter C++言語の取得に失敗")
+	}
 
 	// Auto-detect workspace if paths not provided
 	var coreLibPath string
@@ -311,6 +314,9 @@ func newParseCmd() *cobra.Command {
 
 func runParse(repoPath string, verbose bool) error {
 	p := parser.New()
+	if p == nil {
+		return fmt.Errorf("パーサーの初期化に失敗しました: tree-sitter C++言語の取得に失敗")
+	}
 
 	fmt.Printf("リポジトリを解析中: %s\n", repoPath)
 	fileInfos, err := p.ParseDirectory(repoPath)

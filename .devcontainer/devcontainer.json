@@ -32,11 +32,11 @@
   "forwardPorts": [],
   "initializeCommand": "test -f ${localWorkspaceFolder}/.env || cp ${localWorkspaceFolder}/.env.example ${localWorkspaceFolder}/.env",
   "onCreateCommand": {
-    "fix-go-permissions": "sudo mkdir -p /go/pkg/mod/cache && sudo chmod -R 777 /go",
+    "fix-go-permissions": "sudo mkdir -p /go/pkg/mod/cache && sudo chmod -R 755 /go",
     "go-deps": "go mod download || true",
     "go-verify": "go mod verify || true"
   },
   "updateContentCommand": "go mod download || true",
-  "postStartCommand": "sudo chmod -R 777 /go 2>/dev/null || true",
+  "postStartCommand": "sudo chmod -R 755 /go 2>/dev/null || true",
   "remoteUser": "${localEnv:USER}"
 }
