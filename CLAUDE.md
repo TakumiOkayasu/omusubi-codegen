@@ -21,11 +21,10 @@ make fmt && make lint
 # Basic usage
 ./omusubi-codegen parse --repo /path/to/include [--verbose]
 ./omusubi-codegen generate --repo /path/to/include
+./omusubi-codegen generate  # Auto-detect workspace
 
-# Project generation (recommended)
-./omusubi-codegen generate --project --project-name my-project
-./omusubi-codegen generate --project --project-name my-project \
-  --core-lib ./omusubi --platform-lib ./omusubi-m5stack --board m5stack-core-esp32
+# Alpha version (pre-omusubi)
+./omusubi-codegen generate --legacy-name
 
 # DevContainer
 make devcontainer-build
@@ -36,12 +35,8 @@ make devcontainer-clean
 
 ```text
 workspace/
-├── omusubi/              # Core library
-├── omusubi-m5stack/      # Platform implementation
-└── my-project/           # Generated project
-    ├── platformio.ini
-    ├── include/omusubi/platform/<device>/
-    └── src/
+├── omusubi/              # Core library (auto-detected)
+└── omusubi-m5stack/      # Platform implementation (optional, auto-detected)
 ```
 
 ## Architecture
@@ -54,9 +49,9 @@ C++ Headers → Parser (tree-sitter) → Model → Generator + Templates → Gen
 
 - **cmd/codegen/main.go**: CLI entry point (Cobra), `parse`/`generate` commands, interactive prompts
 - **internal/parser/**: tree-sitter wrapper, AST traversal, pure virtual detection (`= 0`), workspace auto-detection
-- **internal/generator/**: Template execution, file output, PlatformIO project generation
-- **internal/model/**: Data structures (`ClassInfo`, `MethodInfo`, `ProjectConfig`, etc.)
-- **internal/generator/templates/**: `class_header.tmpl`, `class_source.tmpl`, `platformio.ini.tmpl`, etc.
+- **internal/generator/**: Template execution, file output
+- **internal/model/**: Data structures (`ClassInfo`, `MethodInfo`, `FileInfo`, etc.)
+- **internal/generator/templates/**: `class_header.tmpl`, `class_source.tmpl`
 
 ### Key Implementation Details
 
@@ -68,13 +63,13 @@ C++ Headers → Parser (tree-sitter) → Model → Generator + Templates → Gen
 
 Templates: `internal/generator/templates/` (uses `go:embed`, requires `make clean && make build` after changes)
 
-**Variables:** `.ClassName`, `.BaseClass`, `.BaseClassExt`, `.Namespace`, `.Methods`, `.HasNamespace`
+**Variables:** `.ClassName`, `.BaseClass`, `.BaseClassExt`, `.HeaderExt`, `.Namespace`, `.Methods`, `.HasNamespace`
 
 **Functions:** `formatParameters`, `formatMethodSignature`, `toSnakeCase`, `toLower`, `toUpper`
 
 ## Key Conventions
 
-- snake_case filenames, `#pragma once`, copy prevention (deleted), `override` keyword, `= default` constructors
+- snake_case filenames, `#pragma once`, copy/move prevention (deleted), `override` keyword, `= default` constructors, `noexcept` destructors
 
 ## Troubleshooting
 
