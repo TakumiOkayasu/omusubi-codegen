@@ -44,8 +44,8 @@ func TestGenerateImplementation_Cpp17Features(t *testing.T) {
 	err = gen.GenerateImplementation(classInfo, derivedClassName)
 	require.NoError(t, err, "GenerateImplementation failed")
 
-	// Read generated header file
-	headerPath := filepath.Join(tmpDir, "test_device.hpp")
+	// Read generated header file (now in include/ subdirectory)
+	headerPath := filepath.Join(tmpDir, "include", "test_device.hpp")
 	content, err := os.ReadFile(headerPath)
 	require.NoError(t, err, "Failed to read generated header")
 

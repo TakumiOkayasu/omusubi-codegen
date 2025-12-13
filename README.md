@@ -219,21 +219,27 @@ omusubi-codegen/
 
 入力: omusubi内の抽象クラス (例: `IDevice`)
 
-生成されるファイル：
+生成されるディレクトリ構造：
 
-- `my_device.hpp` - 派生クラスのヘッダーファイル
-- `my_device.cpp` - 実装スケルトン (関数本体は空、TODOコメント付き)
+```text
+output/
+├── include/
+│   └── my_device.hpp    # 派生クラスのヘッダーファイル
+└── src/
+    └── my_device.cpp    # 実装スケルトン (関数本体は空、TODOコメント付き)
+```
 
 **注意**：
 
 - ファイル名は自動的にスネークケース (`snake_case`) に変換されます
+- ヘッダーファイルは `include/` に、ソースファイルは `src/` に出力されます（PlatformIO構造）
 - インクルードガードは `#pragma once` を使用します（モダンC++標準）
 - 元のヘッダーファイルが `.h` の場合、生成されるファイルは `.h` と `.cpp` になります
 - 元のヘッダーファイルが `.hpp` の場合、生成されるファイルは `.hpp` と `.cpp` になります
 
 ### 生成例
 
-#### my_device.hpp
+#### include/my_device.hpp
 
 ```cpp
 // Header file for MyDevice
@@ -274,7 +280,7 @@ public:
 };
 ```
 
-#### my_device.cpp
+#### src/my_device.cpp
 
 ```cpp
 // Implementation file for MyDevice

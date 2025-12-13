@@ -58,6 +58,7 @@ C++ Headers → Parser (tree-sitter) → Model → Generator + Templates → Gen
 - **Pure Virtual Detection**: Only methods containing `= 0` are treated as abstract
 - **File Extensions**: Preserves original extension (.h→.h+.cpp, .hpp→.hpp+.cpp)
 - **Output Filenames**: Auto-converted to snake_case (MyDevice → my_device.hpp)
+- **Output Structure**: PlatformIO-compatible (headers in `include/`, sources in `src/`)
 
 ## Template Customization
 

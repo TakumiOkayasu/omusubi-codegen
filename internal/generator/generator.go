@@ -40,7 +40,7 @@ func New(cfg Config) *Generator {
 
 // GenerateImplementation generates C++ implementation files from class info
 func (g *Generator) GenerateImplementation(classInfo *model.ClassInfo, derivedClassName string) error {
-	if err := g.ensureOutputDir(); err != nil {
+	if err := g.ensureOutputDirs(); err != nil {
 		return err
 	}
 
@@ -50,12 +50,12 @@ func (g *Generator) GenerateImplementation(classInfo *model.ClassInfo, derivedCl
 		headerExt = "h"
 	}
 
-	// Generate header file
+	// Generate header file to include/
 	if err := g.generateHeader(classInfo, derivedClassName, headerExt); err != nil {
 		return fmt.Errorf("failed to generate header: %w", err)
 	}
 
-	// Generate source file (always .cpp regardless of source extension)
+	// Generate source file to src/ (always .cpp regardless of source extension)
 	sourceExt := "cpp"
 	if err := g.generateSource(classInfo, derivedClassName, headerExt, sourceExt); err != nil {
 		return fmt.Errorf("failed to generate source: %w", err)
@@ -64,7 +64,7 @@ func (g *Generator) GenerateImplementation(classInfo *model.ClassInfo, derivedCl
 	return nil
 }
 
-// generateHeader generates the header file (.hpp or .h)
+// generateHeader generates the header file (.hpp or .h) to include/
 func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName string, headerExt string) error {
 	tmpl, err := g.loadTemplate("class_header.tmpl")
 	if err != nil {
@@ -79,7 +79,7 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 	}
 
 	filename := toSnakeCase(derivedClassName) + "." + headerExt
-	outputPath := g.getOutputPath(filename)
+	outputPath := g.getHeaderOutputPath(filename)
 
 	if err := os.WriteFile(outputPath, buf.Bytes(), FilePermission); err != nil {
 		return fmt.Errorf("failed to write header file: %w", err)
@@ -89,7 +89,7 @@ func (g *Generator) generateHeader(classInfo *model.ClassInfo, derivedClassName 
 	return nil
 }
 
-// generateSource generates the source file (.cpp)
+// generateSource generates the source file (.cpp) to src/
 func (g *Generator) generateSource(classInfo *model.ClassInfo, derivedClassName string, headerExt string, sourceExt string) error {
 	tmpl, err := g.loadTemplate("class_source.tmpl")
 	if err != nil {
@@ -105,7 +105,7 @@ func (g *Generator) generateSource(classInfo *model.ClassInfo, derivedClassName 
 	}
 
 	filename := toSnakeCase(derivedClassName) + "." + sourceExt
-	outputPath := g.getOutputPath(filename)
+	outputPath := g.getSourceOutputPath(filename)
 
 	if err := os.WriteFile(outputPath, buf.Bytes(), FilePermission); err != nil {
 		return fmt.Errorf("failed to write source file: %w", err)
@@ -219,17 +219,28 @@ func formatMethodSignature(method model.MethodInfo, includeVirtual, includeOverr
 	return strings.Join(parts, " ")
 }
 
-// ensureOutputDir creates the output directory if it doesn't exist
-func (g *Generator) ensureOutputDir() error {
-	if err := os.MkdirAll(g.outputDir, DirPermission); err != nil {
-		return fmt.Errorf("failed to create output directory: %w", err)
+// ensureOutputDirs creates the include/ and src/ directories if they don't exist
+func (g *Generator) ensureOutputDirs() error {
+	includeDir := filepath.Join(g.outputDir, "include")
+	if err := os.MkdirAll(includeDir, DirPermission); err != nil {
+		return fmt.Errorf("failed to create include directory: %w", err)
+	}
+
+	srcDir := filepath.Join(g.outputDir, "src")
+	if err := os.MkdirAll(srcDir, DirPermission); err != nil {
+		return fmt.Errorf("failed to create src directory: %w", err)
 	}
 	return nil
 }
 
-// getOutputPath returns the full path for an output file
-func (g *Generator) getOutputPath(filename string) string {
-	return filepath.Join(g.outputDir, filename)
+// getHeaderOutputPath returns the full path for a header file (include/)
+func (g *Generator) getHeaderOutputPath(filename string) string {
+	return filepath.Join(g.outputDir, "include", filename)
+}
+
+// getSourceOutputPath returns the full path for a source file (src/)
+func (g *Generator) getSourceOutputPath(filename string) string {
+	return filepath.Join(g.outputDir, "src", filename)
 }
 
 // toSnakeCase converts CamelCase or PascalCase to snake_case

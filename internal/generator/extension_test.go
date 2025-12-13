@@ -44,16 +44,16 @@ func TestGenerateImplementation_HFileGeneratesCpp(t *testing.T) {
 	err = gen.GenerateImplementation(classInfo, derivedClassName)
 	require.NoError(t, err, "GenerateImplementation failed")
 
-	// Check that .h header file was generated
-	headerPath := filepath.Join(tmpDir, "test_device.h")
+	// Check that .h header file was generated (in include/ subdirectory)
+	headerPath := filepath.Join(tmpDir, "include", "test_device.h")
 	assert.FileExists(t, headerPath, "Expected header file was not generated")
 
-	// Check that .cpp source file was generated (NOT .c)
-	cppPath := filepath.Join(tmpDir, "test_device.cpp")
+	// Check that .cpp source file was generated (NOT .c) (in src/ subdirectory)
+	cppPath := filepath.Join(tmpDir, "src", "test_device.cpp")
 	assert.FileExists(t, cppPath, "Expected .cpp file was not generated")
 
 	// Check that .c file was NOT generated
-	cPath := filepath.Join(tmpDir, "test_device.c")
+	cPath := filepath.Join(tmpDir, "src", "test_device.c")
 	assert.NoFileExists(t, cPath, "Unexpected .c file was generated (should be .cpp)")
 }
 
@@ -90,11 +90,11 @@ func TestGenerateImplementation_HppFileGeneratesCpp(t *testing.T) {
 	err = gen.GenerateImplementation(classInfo, derivedClassName)
 	require.NoError(t, err, "GenerateImplementation failed")
 
-	// Check that .hpp header file was generated
-	headerPath := filepath.Join(tmpDir, "sample_device.hpp")
+	// Check that .hpp header file was generated (in include/ subdirectory)
+	headerPath := filepath.Join(tmpDir, "include", "sample_device.hpp")
 	assert.FileExists(t, headerPath, "Expected header file was not generated")
 
-	// Check that .cpp source file was generated
-	cppPath := filepath.Join(tmpDir, "sample_device.cpp")
+	// Check that .cpp source file was generated (in src/ subdirectory)
+	cppPath := filepath.Join(tmpDir, "src", "sample_device.cpp")
 	assert.FileExists(t, cppPath, "Expected .cpp file was not generated")
 }

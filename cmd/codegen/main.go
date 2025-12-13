@@ -272,9 +272,9 @@ func runGenerate(repoPath, className, outputDir, templateDir string, useLegacyNa
 		fmt.Printf("       -I %s/include\n", coreLibPath)
 	}
 
-	fmt.Printf("\n3. 生成されたファイルを適切なディレクトリに配置:\n")
-	fmt.Printf("   - ヘッダー (.hpp/.h): include/ ディレクトリ\n")
-	fmt.Printf("   - ソース (.cpp): src/ ディレクトリ\n")
+	fmt.Printf("\n✓ 生成されたファイルは既にPlatformIO構造で配置済み:\n")
+	fmt.Printf("   - ヘッダー (.hpp/.h): %s/include/\n", absOutputDir)
+	fmt.Printf("   - ソース (.cpp): %s/src/\n", absOutputDir)
 
 	fmt.Printf("\n" + strings.Repeat("=", 60) + "\n")
 
