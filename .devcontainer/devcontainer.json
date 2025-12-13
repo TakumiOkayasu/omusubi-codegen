@@ -29,13 +29,12 @@
       }
     }
   },
-  "forwardPorts": [],
-  "initializeCommand": "test -f ${localWorkspaceFolder}/.env || cp ${localWorkspaceFolder}/.env.example ${localWorkspaceFolder}/.env",
-  "onCreateCommand": {
-    "fix-go-permissions": "sudo mkdir -p /go/pkg/mod/cache && sudo chmod -R 755 /go",
-    "go-deps": "go mod download || true",
-    "go-verify": "go mod verify || true"
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:latest": {},
+    "ghcr.io/devcontainers/features/github-cli:latest": {}
   },
+  "initializeCommand": "test -f ${localWorkspaceFolder}/.env || cp ${localWorkspaceFolder}/.env.example ${localWorkspaceFolder}/.env",
+  "onCreateCommand": "sudo mkdir -p /go/pkg/mod/cache && sudo chown -R $(id -u):$(id -g) /go && go mod download && go mod verify",
   "updateContentCommand": "go mod download || true",
   "postStartCommand": "sudo chmod -R 755 /go 2>/dev/null || true",
   "remoteUser": "${localEnv:USER}"
