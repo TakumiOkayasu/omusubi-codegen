@@ -4,26 +4,26 @@ package model
 type ClassInfo struct {
 	Name          string
 	Namespace     string
-	BaseClasses   []string
-	IsAbstract    bool
-	Methods       []MethodInfo
-	Fields        []FieldInfo
 	Documentation string
 	SourceFileExt string // "h" or "hpp"
+	BaseClasses   []string
+	Methods       []MethodInfo
+	Fields        []FieldInfo
+	IsAbstract    bool
 }
 
 // MethodInfo represents a C++ method
 type MethodInfo struct {
 	Name          string
 	ReturnType    string
+	Documentation string
 	Parameters    []ParameterInfo
+	AccessLevel   AccessLevel
 	IsVirtual     bool
 	IsPureVirtual bool
 	IsConst       bool
 	IsStatic      bool
 	IsOverride    bool
-	AccessLevel   AccessLevel
-	Documentation string
 }
 
 // ParameterInfo represents a method parameter
@@ -67,6 +67,6 @@ func (a AccessLevel) String() string {
 // FileInfo represents parsed C++ file information
 type FileInfo struct {
 	Path      string
-	Classes   []ClassInfo
 	Namespace string
+	Classes   []ClassInfo
 }

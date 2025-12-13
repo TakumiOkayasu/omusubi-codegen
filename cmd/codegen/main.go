@@ -127,10 +127,10 @@ func runGenerate(repoPath, className, outputDir, templateDir string, useLegacyNa
 
 	// Collect all abstract classes
 	type ClassOption struct {
+		ClassInfo *model.ClassInfo
 		Name      string
 		FullName  string
 		FilePath  string
-		ClassInfo *model.ClassInfo
 	}
 
 	var classOptions []ClassOption
@@ -218,7 +218,6 @@ func runGenerate(repoPath, className, outputDir, templateDir string, useLegacyNa
 
 	// Generate files for each selected class
 	fmt.Printf("\n実装ファイルを生成中...\n")
-	var generatedFiles []string
 	successCount := 0
 	for _, idx := range selectedIndices {
 		selectedClass := classOptions[idx]
@@ -238,7 +237,6 @@ func runGenerate(repoPath, className, outputDir, templateDir string, useLegacyNa
 		}
 
 		fmt.Printf("  ✓ %s.hpp と %s.cpp を生成しました\n", derivedName, derivedName)
-		generatedFiles = append(generatedFiles, derivedName)
 		successCount++
 	}
 
@@ -307,7 +305,7 @@ func newParseCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&repoPath, "repo", "r", "", "omusubi リポジトリへのパス（必須）")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "詳細なメソッド情報を表示")
-	cmd.MarkFlagRequired("repo")
+	_ = cmd.MarkFlagRequired("repo")
 
 	return cmd
 }
