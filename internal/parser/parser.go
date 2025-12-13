@@ -67,10 +67,10 @@ func (p *Parser) ParseSource(source []byte) (*model.FileInfo, error) {
 	ctx := context.Background()
 	tree, err := p.parser.ParseCtx(ctx, nil, source)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse source: %w", err)
+		return nil, fmt.Errorf("ソースの解析に失敗しました: %w", err)
 	}
 	if tree == nil {
-		return nil, fmt.Errorf("failed to parse source: tree is nil")
+		return nil, fmt.Errorf("ソースの解析に失敗しました: 構文木がnilです")
 	}
 	defer tree.Close()
 
@@ -371,7 +371,7 @@ func (p *Parser) ParseDirectory(dirPath string) ([]model.FileInfo, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to walk directory %s: %w", dirPath, err)
+		return nil, fmt.Errorf("ディレクトリ %s の走査に失敗しました: %w", dirPath, err)
 	}
 
 	// Parse each header file
@@ -379,7 +379,7 @@ func (p *Parser) ParseDirectory(dirPath string) ([]model.FileInfo, error) {
 		fileInfo, err := p.ParseFile(headerFile)
 		if err != nil {
 			// Log error but continue parsing other files
-			fmt.Fprintf(os.Stderr, "Warning: failed to parse %s: %v\n", headerFile, err)
+			fmt.Fprintf(os.Stderr, "警告: %s の解析に失敗しました: %v\n", headerFile, err)
 			continue
 		}
 
@@ -407,14 +407,14 @@ func (p *Parser) FindAbstractClass(dirPath, className string) (*model.ClassInfo,
 		}
 	}
 
-	return nil, fmt.Errorf("abstract class '%s' not found in directory %s", className, dirPath)
+	return nil, fmt.Errorf("抽象クラス '%s' がディレクトリ %s に見つかりませんでした", className, dirPath)
 }
 
 // readFile reads the content of a file
 func readFile(filePath string) ([]byte, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file %s: %w", filePath, err)
+		return nil, fmt.Errorf("ファイル %s の読み込みに失敗しました: %w", filePath, err)
 	}
 	return content, nil
 }
@@ -477,9 +477,9 @@ func DetectWorkspace(startPath string, useLegacyName bool) (coreLibPath, platfor
 	}
 
 	if useLegacyName {
-		return "", "", fmt.Errorf("workspace not found: could not locate pre-omusubi core library (alpha version)")
+		return "", "", fmt.Errorf("ワークスペースが見つかりません: pre-omusubiコアライブラリ（アルファ版）が見つかりませんでした")
 	}
-	return "", "", fmt.Errorf("workspace not found: could not locate omusubi core library")
+	return "", "", fmt.Errorf("ワークスペースが見つかりません: omusubiコアライブラリが見つかりませんでした")
 }
 
 // dirExists checks if a directory exists
