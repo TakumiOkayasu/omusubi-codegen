@@ -283,5 +283,4 @@ MIT License
 
 ## 関連プロジェクト
 
-- [omusubi](https://github.com/TakumiOkayasu/omusubi) - Omusubi組み込みフレームワーク本体
 - [pre-omusubi](https://github.com/TakumiOkayasu/pre-omusubi) - アルファ版（`--legacy-name` フラグで対応）
